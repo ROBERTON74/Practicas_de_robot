@@ -1,0 +1,15 @@
+# Archivo .mcd de claves y configuracion sensible
+# Nota: no subir este archivo a repositorios publicos.
+
+APP_NAME=robot-mecanico-control-web
+APP_PORT=3000
+
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=FCbarcelona35
+DB_NAME=robot_mecanico
+
+MCP_TRANSPORT=stdio
+MCP_SERVER_NAME=robot-mcp-server
+MCP_ALLOWED_TOOLS=query_robot_state,create_user_session,log_robot_movement

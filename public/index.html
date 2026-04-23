@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control DOBOT M1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.166.1/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.166.1/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="ambient"></div>
+
+    <header class="topbar">
+      <h1>Control Robotico DOBOT M1</h1>
+      <p>Simulacion en tiempo real con telemetria MySQL</p>
+    </header>
+
+    <main class="layout">
+      <section class="viewer-card">
+        <canvas id="robot-canvas"></canvas>
+      </section>
+
+      <aside class="panel-card">
+        <div class="panel-block">
+          <h2>Ejes SCARA</h2>
+          <ul class="stats">
+            <li>J1: <span id="joint-j1">0.0</span> deg</li>
+            <li>J2: <span id="joint-j2">0.0</span> deg</li>
+            <li>Z: <span id="axis-z">0</span> mm</li>
+            <li>R: <span id="axis-r">0.0</span> deg</li>
+          </ul>
+        </div>
+
+        <div class="panel-block">
+          <h2>TCP</h2>
+          <ul class="stats">
+            <li>X: <span id="axis-x">0</span> mm</li>
+            <li>Y: <span id="axis-y">0</span> mm</li>
+          </ul>
+        </div>
+
+        <div class="panel-block">
+          <h2>Control</h2>
+          <p>Flecha izquierda/derecha: eje J1 (+-90 deg)</p>
+          <p>Flecha arriba/abajo: eje J2 (+-135 deg)</p>
+          <p>W / S: eje Z (0 a 250 mm)</p>
+          <p>Q / E: eje R (360 deg total)</p>
+          <p>Espacio: abrir / cerrar pinza</p>
+        </div>
+
+        <div class="panel-block">
+          <h2>Pinza</h2>
+          <p>Estado: <span id="grip-status" class="grip-open">Abierta</span></p>
+          <p>Baja Z a 0 mm y cierra sobre un objeto para cogerlo.</p>
+        </div>
+
+        <div class="panel-block">
+          <h2>Sesion</h2>
+          <p id="session-text">Sin iniciar</p>
+          <button id="logout-btn" disabled>Cerrar sesion</button>
+        </div>
+      </aside>
+    </main>
+
+    <div class="login-modal" id="login-modal">
+      <div class="login-card">
+        <h2>Iniciar sesion de operador</h2>
+        <p>Registra usuario, tiempo de uso y movimientos del robot.</p>
+        <form id="login-form">
+          <input type="text" id="username" placeholder="Nombre de usuario" required minlength="3" />
+          <button type="submit">Entrar al control</button>
+        </form>
+      </div>
+    </div>
+
+    <details class="python-section" id="python-section">
+      <summary class="python-toggle">
+        <span>Programacion Python</span>
+        <span class="python-toggle-hint">Haz clic para expandir</span>
+      </summary>
+      <div class="python-card">
+        <div class="python-editor-area">
+          <div class="python-col">
+            <div class="python-col-header">
+              <span>Editor</span>
+              <div class="py-btn-row">
+                <button id="py-run-btn">Ejecutar</button>
+                <button id="py-stop-btn" disabled>Detener</button>
+              </div>
+            </div>
+            <textarea id="py-editor" spellcheck="false"># Comandos disponibles:
+# robot.mover_j1(grados)    J1: -90 a 90
+# robot.mover_j2(grados)    J2: -135 a 135
+# robot.mover_z(mm)         Z: 0 a 250 mm
+# robot.mover_r(grados)     R: -180 a 180
+# robot.esperar(segundos)
+# robot.log("mensaje")
+# robot.velocidad(segundos_entre_pasos)
+
+robot.mover_z(150)
+robot.mover_j1(45)
+robot.mover_j2(-90)
+robot.mover_r(180)
+robot.esperar(1)
+robot.mover_j1(0)
+robot.mover_j2(0)
+robot.mover_z(120)
+robot.mover_r(0)</textarea>
+          </div>
+          <div class="python-col">
+            <div class="python-col-header">
+              <span>Consola</span>
+              <button id="py-clear-btn">Limpiar</button>
+            </div>
+            <div id="py-console"></div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
