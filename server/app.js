@@ -52,6 +52,7 @@ app.post("/api/users/login", async (req, res) => {
 
     res.json({ userId, sessionId });
   } catch (error) {
+    console.error("LOGIN ERROR:", error.message, error.code);
     res.status(400).json({ message: error.message || "No se pudo iniciar sesion" });
   }
 });
@@ -196,4 +197,5 @@ app.post("/api/python/stop", (_req, res) => {
 const PORT = Number(process.env.PORT || 3000);
 server.listen(PORT, () => {
   console.log(`Robot web app listening on http://localhost:${PORT}`);
+  console.log(`DB config: host=${process.env.DB_HOST} port=${process.env.DB_PORT} user=${process.env.DB_USER} db=${process.env.DB_NAME}`);
 });
