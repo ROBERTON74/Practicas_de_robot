@@ -1,0 +1,31 @@
+<html>
+  <head>
+    <%- include('../ui/header'); %>
+    <title>ReNoLabs - Administración</title>
+    <!-- <script src="https://pagecdn.io/lib/ace/1.4.12/ace.js" type="text/javascript" charset="utf-8"></script>         -->
+    <script src="./scripts/renolabs_library.js" type="text/javascript"></script>
+  </head>
+  <body class="bg-light">
+    <%- include('../ui/menu', {active: 'admin'}); %>
+    <%- include('./edit/admin') %>
+
+    <div class="modal fade" id="modalGenericMessage" tabindex="-1" aria-labelledby="modalGenericMessageLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalGenericMessageMessage">Aviso</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <div class="alert alert-warning mt-3" role="alert"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <body>
+</html>

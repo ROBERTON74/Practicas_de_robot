@@ -1,0 +1,24 @@
+generated-with: Easy Java/Javascript Simulations, version 6.0, build 191124. Visit http://www.um.es/fem/Ejs
+title: DOBOTMagician_LaboratorioRemoto
+logo-image: 
+author: Daniela Goncalves López de Medrano, Jesús Chacón Sombría
+copyright: 
+preferred-width: 1024
+preferred-height: 768
+author-image: 
+source: DobotMagician.ejss
+main-script: 
+main-simulation: DOBOTMagician_LaboratorioRemoto_Simulation.xhtml
+available-languages: 
+html-description: DOBOTMagician_LaboratorioRemoto_Intro_1.html
+html-contents: DOBOTMagician_LaboratorioRemoto_Contents.xhtml
+html-main: DOBOTMagician_LaboratorioRemoto.xhtml
+page-title: DOBOT Magician
+page-index: DOBOTMagician_LaboratorioRemoto_Intro_1.html
+page-title: DOBOTMagician_LaboratorioRemoto
+page-index: DOBOTMagician_LaboratorioRemoto_Simulation.xhtml
+resource: arriba.png
+resource: range.css
+resource: _metadata.txt
+resource: dobot.JPG
+resource: abajo.png

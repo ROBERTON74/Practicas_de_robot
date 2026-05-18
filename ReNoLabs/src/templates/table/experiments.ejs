@@ -1,0 +1,26 @@
+<table class="table table-sm table-striped table-hover table-borderless caption-top" id="experimentsTable">
+	<caption>Datos almacenados.</caption>
+	<thead class="table-primary">
+		<tr>
+			<th scope="col">Día</th>
+			<th scope="col">Hora</th>
+			<th scope="col">Tamaño</th>
+			<th scope="col">Enlace</th>
+		</tr>
+	</thead>
+	<tbody>
+		<% 
+			function getDate(d) { return new Date(d).toLocaleDateString(); };
+			function getTime(d) {	return new Date(d).toLocaleTimeString(); };
+			function getSize(d) {	return (d/1000).toFixed(1) + ' kB'; };
+			files.forEach(function(f){
+		%>
+		<tr>
+			<th scope="row"><%= getDate(f.date) %></th>
+			<td><%= getTime(f.date) %></td>
+			<td><%= getSize(f.size) %></td>
+			<td><a href="/download/<%= f.name %>"><i class="bi bi-download"></i></a></td>
+		</tr>
+		<% }); %>
+	</tbody>
+</table>

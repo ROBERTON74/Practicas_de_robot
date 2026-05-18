@@ -1,0 +1,15 @@
+# Credenciales y secretos (REGLA: NUNCA SUBIR)
+.env
+
+# Dependencias (REGLA: NO SUBIR node_modules)
+node_modules/
+dist/
+
+# Datos de base de datos persistentes
+vrlabs_mysql_data/
+
+# Logs y temporales
+*.log
+npm-debug.log*
+.DS_Store
+.cache/

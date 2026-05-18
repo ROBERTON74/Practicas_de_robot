@@ -1,0 +1,84 @@
+<html>
+  <head>
+    <title>DOBOT M1</title>
+    <link rel="stylesheet" type="text/css" href="_ejs_library/css/ejss.css"></link>
+  </head>
+  <body>
+    <p align="left" style="margin-top: 0">
+      <b><font size="7" face="Times New Roman"><i><u>LABORATORIO REMOTO - DOBOT M1</u></i></font></b>
+    </p>
+    <p align="left"><img src="./dobotm1.jpg" style="max-width:600px;"/></p>
+
+    <p dir="ltr" align="justify" style="line-height:1.38; text-indent:27pt; margin-top:12pt;">
+      <font color="#000000" face="Times New Roman" size="6">
+        El <b><i>DOBOT M1</i></b> es un brazo rob&#243;tico SCARA (Selective Compliance Assembly Robot Arm)
+        de 4 ejes orientado al mercado industrial ligero. Soporta programaci&#243;n por ense&#241;anza (teaching/playback),
+        control por script Python, programaci&#243;n gr&#225;fica Blockly y clasificaci&#243;n inteligente.
+        Su dise&#241;o integrado (controlador y driver en el propio robot, sin armario externo) simplifica la instalaci&#243;n.
+        La carga nominal es 1,5&nbsp;kg y la repetibilidad &#177;0,02&nbsp;mm.
+      </font>
+    </p>
+
+    <p dir="ltr" align="justify" style="line-height:1.38; text-indent:27pt;">
+      <font color="#000000" face="Times New Roman" size="6">
+        T&#233;cnicamente el DOBOT M1 tiene cuatro articulaciones: tres de revoluci&#243;n (J1, J2, J4) y una prism&#225;tica
+        lineal (J3, eje Z por tornillo de bolas). Los elementos mec&#225;nicos son: base, brazo trasero (Rear Arm),
+        antebrazo (Forearm), eje Z y efector final. La comunicaci&#243;n con el PC se realiza por Ethernet (TCP/IP).
+      </font>
+    </p>
+
+    <p dir="ltr" align="center" style="margin-top:18pt;">
+      <font color="#808080" face="Times New Roman" size="6"><i>Tabla 1: Especificaciones t&#233;cnicas del DOBOT M1.</i></font>
+    </p>
+    <div dir="ltr" align="center">
+      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Times New Roman;font-size:large;">
+        <tr style="background-color:#e8e8e8;"><td><b>Par&#225;metro</b></td><td><b>Valor</b></td></tr>
+        <tr><td>Tipo de robot</td><td>SCARA 4 ejes</td></tr>
+        <tr><td>Alcance m&#225;ximo</td><td>400 mm</td></tr>
+        <tr><td>Carga nominal</td><td>1,5 kg</td></tr>
+        <tr><td>Repetibilidad</td><td>&#177;0,02 mm</td></tr>
+        <tr><td>Vel. m&#225;x. articular (J1, J2)</td><td>180 &#176;/s</td></tr>
+        <tr><td>Vel. m&#225;x. eje Z (J3)</td><td>1000 mm/s</td></tr>
+        <tr><td>Alimentaci&#243;n</td><td>100-240 V AC &#8594; 48 V DC</td></tr>
+        <tr><td>Comunicaci&#243;n</td><td>Ethernet, RS-232C</td></tr>
+        <tr><td>E/S digital</td><td>22 salidas, 24 entradas, 6 ADC</td></tr>
+      </table>
+    </div>
+
+    <p dir="ltr" align="center" style="margin-top:18pt;">
+      <font color="#808080" face="Times New Roman" size="6"><i>Tabla 2: Rango de movimiento de las articulaciones.</i></font>
+    </p>
+    <div dir="ltr" align="center">
+      <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Times New Roman;font-size:large;">
+        <tr style="background-color:#e8e8e8;">
+          <td><b>Articulaci&#243;n</b></td><td><b>Tipo</b></td><td><b>Descripci&#243;n</b></td>
+          <td><b>L&#237;mite mec&#225;nico</b></td><td><b>L&#237;mite software</b></td><td><b>Vel. m&#225;x.</b></td>
+        </tr>
+        <tr>
+          <td><b>J1</b></td><td>Rotaci&#243;n horizontal</td><td>Brazo trasero (Rear Arm)</td>
+          <td>-90&#176; / +90&#176;</td><td>-85&#176; / +85&#176;</td><td>180 &#176;/s</td>
+        </tr>
+        <tr>
+          <td><b>J2</b></td><td>Rotaci&#243;n horizontal</td><td>Antebrazo (Forearm)</td>
+          <td>-135&#176; / +135&#176;</td><td>-135&#176; / +135&#176;</td><td>180 &#176;/s</td>
+        </tr>
+        <tr>
+          <td><b>J3</b></td><td>Lineal vertical (Z)</td><td>Eje Z - tornillo de bolas</td>
+          <td>0 - 250 mm</td><td>10 - 235 mm</td><td>1000 mm/s</td>
+        </tr>
+        <tr>
+          <td><b>J4</b></td><td>Rotaci&#243;n horizontal</td><td>Efector final (R-axis)</td>
+          <td>Ilimitado</td><td>-360&#176; / +360&#176;</td><td>180 &#176;/s</td>
+        </tr>
+      </table>
+    </div>
+
+    <p dir="ltr" align="justify" style="line-height:1.38; text-indent:27pt; margin-top:18pt;">
+      <font color="#000000" face="Times New Roman" size="6">
+        <b>Modos de movimiento:</b> Jog cartesiano (X+/-, Y+/-, Z+/-, R+/-), jog articular (J1+/-, J2+/-, J3+/-, J4+/-),
+        MOVJ (articular libre), MOVL (trayectoria recta), JUMP (puerta, pick &amp; place), ARC y CIRCLE.
+        La posici&#243;n de home es (x=400, y=0, z=0, r=0) mm.
+      </font>
+    </p>
+  </body>
+</html>

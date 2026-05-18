@@ -1,0 +1,37 @@
+version: "2"
+services:
+  vrlabs_node:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ../:/home/node/app
+    ports:
+      - "80:8080"
+    depends_on:
+      - vrlabs_db
+    command: sh -c "npm install && npm start"
+
+  # influxdb:
+  #   ports:
+  #     - "8086:8086"
+  #   volumes:
+  #     - ./volumes/influxdb:/var/lib/influxdb
+  #   image: "influxdb:latest"
+
+  vrlabs_db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: renolabs
+      MYSQL_USER: renolabs
+      MYSQL_PASSWORD: renolabs
+    ports:
+      - "3307:3306"
+    volumes:
+      - vrlabs_mysql_data:/var/lib/mysql
+
+volumes:
+  vrlabs_mysql_data:

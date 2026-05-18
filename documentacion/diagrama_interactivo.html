@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arquitectura — Robot Universitario</title>
+  <script src="lib/vis-network.min.js"></script>
+  <link rel="stylesheet" href="lib/vis-network.min.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #e6edf3;
+      letter-spacing: 0.3px;
+    }
+    header p {
+      font-size: 12px;
+      color: #8b949e;
+      margin-top: 3px;
+    }
+    .badge {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    /* ── MAIN AREA ── */
+    #wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    #network {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+    .controls button {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      padding: 7px 13px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: 'Segoe UI', sans-serif;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .controls button:hover { background: #30363d; border-color: #58a6ff; }
+
+    /* ── LEGEND ── */
+    .legend {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(22, 27, 34, 0.96);
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 14px 18px;
+      z-index: 10;
+      min-width: 190px;
+    }
+    .legend h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin-bottom: 10px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 7px;
+      font-size: 12px;
+      color: #c9d1d9;
+    }
+    .dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── PHASES PANEL ── */
+    .phases {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      background: rgba(22, 27, 34, 0.96);
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 14px 18px;
+      z-index: 10;
+      min-width: 240px;
+    }
+    .phases h3 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8b949e;
+      margin-bottom: 10px;
+    }
+    .phase-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 9px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .phase-num {
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 50%;
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      color: #58a6ff;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .phase-text strong { color: #e6edf3; display: block; font-size: 12px; }
+    .phase-text span { color: #8b949e; font-size: 11px; }
+
+    /* ── HINT ── */
+    .hint {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: rgba(22, 27, 34, 0.85);
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 11px;
+      color: #8b949e;
+      z-index: 10;
+      line-height: 1.7;
+    }
+
+    /* ── TOOLTIP ── */
+    .vis-tooltip {
+      background: #161b22 !important;
+      border: 1px solid #30363d !important;
+      border-radius: 8px !important;
+      color: #c9d1d9 !important;
+      padding: 10px 14px !important;
+      font-family: 'Segoe UI', sans-serif !important;
+      font-size: 12px !important;
+      max-width: 260px !important;
+      line-height: 1.6 !important;
+    }
+
+    /* ── LOADING ── */
+    #loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d1117;
+      z-index: 20;
+      font-size: 14px;
+      color: #8b949e;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid #30363d;
+      border-top-color: #58a6ff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🤖 Arquitectura de Microservicios — Robot Universitario</h1>
+    <p>Diagrama interactivo del flujo de comunicación entre servicios</p>
+  </div>
+  <div class="badge">vis-network.js · v9.1.9</div>
+</header>
+
+<div id="wrap">
+  <div id="loading">
+    <div class="spinner"></div>
+    Cargando diagrama…
+  </div>
+
+  <div id="network"></div>
+
+  <div class="hint">
+    🖱️ Arrastra nodos &nbsp;·&nbsp; Rueda: zoom &nbsp;·&nbsp; Clic fondo: mover vista
+  </div>
+
+  <div class="controls">
+    <button onclick="net.fit({ animation: { duration: 600 } })">⊞ Ajustar vista</button>
+    <button onclick="resetPositions()">↺ Restablecer</button>
+  </div>
+
+  <div class="phases">
+    <h3>Fases del flujo</h3>
+    <div class="phase-item">
+      <div class="phase-num">1</div>
+      <div class="phase-text">
+        <strong>Autenticación</strong>
+        <span>Login → JWT Token generado</span>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-num">2</div>
+      <div class="phase-text">
+        <strong>Operación</strong>
+        <span>Panel de control → API REST</span>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-num">3</div>
+      <div class="phase-text">
+        <strong>Control del robot</strong>
+        <span>Protocolo RIP → Hardware físico</span>
+      </div>
+    </div>
+    <div class="phase-item">
+      <div class="phase-num">4</div>
+      <div class="phase-text">
+        <strong>Respuesta</strong>
+        <span>Datos robot → Pantalla alumno</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h3>Servicios</h3>
+    <div class="legend-item"><div class="dot" style="background:#388bfd"></div>Usuario final</div>
+    <div class="legend-item"><div class="dot" style="background:#3fb950"></div>Frontend · Vue.js</div>
+    <div class="legend-item"><div class="dot" style="background:#1abc9c"></div>Backend · Node.js</div>
+    <div class="legend-item"><div class="dot" style="background:#e67e22"></div>Base de datos · MariaDB</div>
+    <div class="legend-item"><div class="dot" style="background:#a371f7"></div>Protocolo · RIP</div>
+    <div class="legend-item"><div class="dot" style="background:#f85149"></div>Hardware físico</div>
+  </div>
+</div>
+
+<script>
+  /* ─── POSICIONES INICIALES ─── */
+  const POS = {
+    alumno:    { x:   0, y: -380 },
+    vrisa:     { x:   0, y: -180 },
+    renolabs:  { x: -180, y:  40 },
+    mariadb:   { x:  200, y:  40 },
+    rip:       { x: -180, y: 250 },
+    robot:     { x: -180, y: 460 },
+  };
+
+  /* ─── NODOS ─── */
+  const nodes = new vis.DataSet([
+    {
+      id: 'alumno',
+      label: '👤  ALUMNO\nNavegador Web',
+      ...POS.alumno,
+      shape: 'ellipse',
+      color: { background: '#1c3a5a', border: '#388bfd', highlight: { background: '#1e4a75', border: '#58a6ff' } },
+      font: { color: '#e6edf3', size: 14, bold: true, face: 'Segoe UI' },
+      widthConstraint: { minimum: 170 },
+      heightConstraint: { minimum: 55 },
+      shadow: { enabled: true, color: 'rgba(56,139,253,0.35)', size: 14, x: 0, y: 4 },
+      title: '<b>👤 Alumno</b><br>Usuario final de la aplicación.<br>Accede mediante el navegador web.<br>Se autentica con usuario y contraseña.',
+    },
+    {
+      id: 'vrisa',
+      label: '🖥️  vrisa\nVue.js  ·  Frontend',
+      ...POS.vrisa,
+      shape: 'box',
+      color: { background: '#1a3a27', border: '#3fb950', highlight: { background: '#1e4a30', border: '#56d364' } },
+      font: { color: '#e6edf3', size: 13, face: 'Segoe UI' },
+      widthConstraint: { minimum: 195 },
+      heightConstraint: { minimum: 52 },
+      shadow: { enabled: true, color: 'rgba(63,185,80,0.3)', size: 12, x: 0, y: 3 },
+      borderWidth: 2,
+      title: '<b>🖥️ vrisa · Vue.js</b><br>Interfaz de usuario del laboratorio.<br>Muestra el panel de control, formularios y resultados.<br>Se comunica con ReNoLabs mediante REST API + JWT.',
+    },
+    {
+      id: 'renolabs',
+      label: '⚙️  ReNoLabs\nNode.js · Express · PM2',
+      ...POS.renolabs,
+      shape: 'box',
+      color: { background: '#0e3a33', border: '#1abc9c', highlight: { background: '#0e4a3f', border: '#20d9b5' } },
+      font: { color: '#e6edf3', size: 13, face: 'Segoe UI' },
+      widthConstraint: { minimum: 210 },
+      heightConstraint: { minimum: 52 },
+      shadow: { enabled: true, color: 'rgba(26,188,156,0.3)', size: 12, x: 0, y: 3 },
+      borderWidth: 2,
+      title: '<b>⚙️ ReNoLabs · Node.js</b><br>Núcleo del sistema. Expone la API REST.<br>Valida JWT en cada petición.<br>Consulta MariaDB y envía comandos al robot.<br>PM2 lo mantiene siempre activo.',
+    },
+    {
+      id: 'mariadb',
+      label: '🗄️  MariaDB\nBase de Datos',
+      ...POS.mariadb,
+      shape: 'database',
+      color: { background: '#3a2000', border: '#e67e22', highlight: { background: '#4a2a00', border: '#f39c12' } },
+      font: { color: '#e6edf3', size: 13, face: 'Segoe UI' },
+      widthConstraint: { minimum: 160 },
+      heightConstraint: { minimum: 52 },
+      shadow: { enabled: true, color: 'rgba(230,126,34,0.3)', size: 12, x: 0, y: 3 },
+      borderWidth: 2,
+      title: '<b>🗄️ MariaDB</b><br>Base de datos relacional SQL.<br>Almacena usuarios, sesiones, resultados.<br>Solo accesible desde la red interna Docker.<br>Puerto interno: 3306 · Puerto host: 3308.',
+    },
+    {
+      id: 'rip',
+      label: '📡  rip-js-server\nProtocolo RIP',
+      ...POS.rip,
+      shape: 'box',
+      color: { background: '#2d1b4e', border: '#a371f7', highlight: { background: '#3a2260', border: '#bc8cff' } },
+      font: { color: '#e6edf3', size: 13, face: 'Segoe UI' },
+      widthConstraint: { minimum: 195 },
+      heightConstraint: { minimum: 52 },
+      shadow: { enabled: true, color: 'rgba(163,113,247,0.3)', size: 12, x: 0, y: 3 },
+      borderWidth: 2,
+      title: '<b>📡 rip-js-server</b><br>Implementa el protocolo RIP.<br>(Remote Interoperability Protocol)<br>Traduce comandos del backend en señales<br>que el robot físico puede interpretar.',
+    },
+    {
+      id: 'robot',
+      label: '🦾  Robot Físico\nLaboratorio Real',
+      ...POS.robot,
+      shape: 'ellipse',
+      color: { background: '#3a0f0d', border: '#f85149', highlight: { background: '#4a1412', border: '#ff7b72' } },
+      font: { color: '#e6edf3', size: 14, bold: true, face: 'Segoe UI' },
+      widthConstraint: { minimum: 185 },
+      heightConstraint: { minimum: 57 },
+      shadow: { enabled: true, color: 'rgba(248,81,73,0.35)', size: 14, x: 0, y: 4 },
+      borderWidth: 2,
+      title: '<b>🦾 Robot Físico</b><br>Laboratorio real con actuadores y sensores.<br>Recibe órdenes del protocolo RIP.<br>Devuelve datos de sensores al sistema.',
+    },
+  ]);
+
+  /* ─── ARISTAS ─── */
+  const C = {
+    blue:    '#388bfd',
+    green:   '#3fb950',
+    teal:    '#1abc9c',
+    orange:  '#e67e22',
+    purple:  '#a371f7',
+    red:     '#f85149',
+    muted:   '#484f58',
+  };
+
+  const edges = new vis.DataSet([
+    /* Alumno → vrisa */
+    {
+      id: 'e1', from: 'alumno', to: 'vrisa',
+      label: '①  HTTP/HTTPS\nCredenciales / Acciones',
+      arrows: { to: { enabled: true, scaleFactor: 1.1 } },
+      color: { color: C.blue, highlight: '#58a6ff' },
+      font: { color: '#e6edf3', size: 11, align: 'left', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 2, smooth: { type: 'curvedCW', roundness: 0.25 },
+    },
+    /* vrisa → Alumno (respuesta) */
+    {
+      id: 'e2', from: 'vrisa', to: 'alumno',
+      label: '⑫  Pantalla\nactualizada',
+      arrows: { to: { enabled: true, scaleFactor: 1.0 } },
+      color: { color: C.muted, highlight: '#6e7681', opacity: 0.75 },
+      font: { color: '#ffd700', size: 10, align: 'right', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 1.5, smooth: { type: 'curvedCCW', roundness: 0.25 },
+      dashes: [6, 4],
+    },
+    /* vrisa → ReNoLabs */
+    {
+      id: 'e3', from: 'vrisa', to: 'renolabs',
+      label: '②  REST API · JSON\nJWT Token en cabecera',
+      arrows: { to: { enabled: true, scaleFactor: 1.1 } },
+      color: { color: C.green, highlight: '#56d364' },
+      font: { color: '#e6edf3', size: 11, align: 'left', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 2, smooth: { type: 'curvedCW', roundness: 0.2 },
+    },
+    /* ReNoLabs → vrisa (respuesta) */
+    {
+      id: 'e4', from: 'renolabs', to: 'vrisa',
+      label: '⑪  JSON Response\nHTTP',
+      arrows: { to: { enabled: true, scaleFactor: 1.0 } },
+      color: { color: C.muted, highlight: '#6e7681', opacity: 0.75 },
+      font: { color: '#ffd700', size: 10, align: 'right', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 1.5, smooth: { type: 'curvedCCW', roundness: 0.2 },
+      dashes: [6, 4],
+    },
+    /* ReNoLabs ↔ MariaDB */
+    {
+      id: 'e5', from: 'renolabs', to: 'mariadb',
+      label: '③  SQL Query\nRed interna Docker',
+      arrows: { to: { enabled: true, scaleFactor: 1.1 }, from: { enabled: true, scaleFactor: 1.1 } },
+      color: { color: C.orange, highlight: '#f39c12' },
+      font: { color: '#e6edf3', size: 11, align: 'middle', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 2, smooth: { type: 'curvedCW', roundness: 0.3 },
+    },
+    /* ReNoLabs → rip */
+    {
+      id: 'e6', from: 'renolabs', to: 'rip',
+      label: '④  Comando RIP\nWebSocket / TCP',
+      arrows: { to: { enabled: true, scaleFactor: 1.1 } },
+      color: { color: C.purple, highlight: '#bc8cff' },
+      font: { color: '#e6edf3', size: 11, align: 'left', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 2, smooth: { type: 'curvedCW', roundness: 0.1 },
+    },
+    /* rip → ReNoLabs (resultado) */
+    {
+      id: 'e7', from: 'rip', to: 'renolabs',
+      label: '⑩  Resultado\noperación',
+      arrows: { to: { enabled: true, scaleFactor: 1.0 } },
+      color: { color: C.muted, highlight: '#6e7681', opacity: 0.75 },
+      font: { color: '#ffd700', size: 10, align: 'right', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 1.5, smooth: { type: 'curvedCCW', roundness: 0.1 },
+      dashes: [6, 4],
+    },
+    /* rip → Robot */
+    {
+      id: 'e8', from: 'rip', to: 'robot',
+      label: '⑤  Señales de control\nInterfaz hardware',
+      arrows: { to: { enabled: true, scaleFactor: 1.1 } },
+      color: { color: C.red, highlight: '#ff7b72' },
+      font: { color: '#e6edf3', size: 11, align: 'left', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 2, smooth: { type: 'curvedCW', roundness: 0.1 },
+    },
+    /* Robot → rip (sensores) */
+    {
+      id: 'e9', from: 'robot', to: 'rip',
+      label: '⑨  Datos sensores\nEstado del robot',
+      arrows: { to: { enabled: true, scaleFactor: 1.0 } },
+      color: { color: C.muted, highlight: '#6e7681', opacity: 0.75 },
+      font: { color: '#ffd700', size: 10, align: 'right', background: '#161b22', strokeWidth: 3, strokeColor: '#0d1117' },
+      width: 1.5, smooth: { type: 'curvedCCW', roundness: 0.1 },
+      dashes: [6, 4],
+    },
+  ]);
+
+  /* ─── RED ─── */
+  const container = document.getElementById('network');
+  const net = new vis.Network(
+    container,
+    { nodes, edges },
+    {
+      physics: { enabled: false },
+      interaction: {
+        dragNodes: true,
+        dragView:  true,
+        zoomView:  true,
+        hover:     true,
+        tooltipDelay: 150,
+        navigationButtons: false,
+        keyboard: false,
+      },
+      nodes: { borderWidth: 2 },
+      edges: { chosen: true },
+    }
+  );
+
+  /* Ocultar loading en cuanto el canvas esté listo */
+  net.once('afterDrawing', () => {
+    document.getElementById('loading').style.display = 'none';
+    net.fit({ animation: { duration: 500, easingFunction: 'easeInOutQuad' } });
+  });
+
+  /* Restablecer posiciones originales */
+  function resetPositions() {
+    Object.entries(POS).forEach(([id, pos]) => {
+      nodes.update({ id, x: pos.x, y: pos.y });
+    });
+    net.fit({ animation: { duration: 600, easingFunction: 'easeInOutQuad' } });
+  }
+
+  /* ─── ANIMACIÓN: PARTÍCULAS FLUYENDO POR LAS FLECHAS ─── */
+
+  // Cada entrada define un tramo animado: color, velocidad y curvatura
+  // cw:true = curva a la derecha (misma que la flecha de ida en vis-network)
+  const flowEdges = [
+    { from: 'alumno',   to: 'vrisa',    color: '#388bfd', r: 0.25, cw: true,  speed: 0.0028, faded: false },
+    { from: 'vrisa',    to: 'alumno',   color: '#5a6a7a', r: 0.25, cw: false, speed: 0.0018, faded: true  },
+    { from: 'vrisa',    to: 'renolabs', color: '#3fb950', r: 0.20, cw: true,  speed: 0.0032, faded: false },
+    { from: 'renolabs', to: 'vrisa',    color: '#3a5040', r: 0.20, cw: false, speed: 0.0020, faded: true  },
+    { from: 'renolabs', to: 'mariadb',  color: '#e67e22', r: 0.30, cw: true,  speed: 0.0040, faded: false },
+    { from: 'mariadb',  to: 'renolabs', color: '#a05010', r: 0.30, cw: false, speed: 0.0030, faded: true  },
+    { from: 'renolabs', to: 'rip',      color: '#a371f7', r: 0.10, cw: true,  speed: 0.0028, faded: false },
+    { from: 'rip',      to: 'renolabs', color: '#5a3a7a', r: 0.10, cw: false, speed: 0.0018, faded: true  },
+    { from: 'rip',      to: 'robot',    color: '#f85149', r: 0.10, cw: true,  speed: 0.0028, faded: false },
+    { from: 'robot',    to: 'rip',      color: '#7a2a28', r: 0.10, cw: false, speed: 0.0018, faded: true  },
+  ];
+
+  // Crear partículas escalonadas para cada tramo
+  const particles = [];
+  flowEdges.forEach(edge => {
+    const count = edge.faded ? 2 : 3;
+    for (let i = 0; i < count; i++) {
+      particles.push({ ...edge, t: i / count });
+    }
+  });
+
+  // Punto de control de la curva bezier (igual que vis-network curvedCW/CCW)
+  function ctrlPoint(from, to, r, cw) {
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const s  = cw ? 1 : -1;
+    return { x: mx + s * (-dy * r), y: my + s * (dx * r) };
+  }
+
+  // Posición a lo largo de una bezier cuadrática
+  function bezierPt(t, p0, cp, p1) {
+    const mt = 1 - t;
+    return {
+      x: mt * mt * p0.x + 2 * mt * t * cp.x + t * t * p1.x,
+      y: mt * mt * p0.y + 2 * mt * t * cp.y + t * t * p1.y,
+    };
+  }
+
+  // Dibujar partículas encima del canvas de vis-network
+  net.on('afterDrawing', ctx => {
+    const pos = net.getPositions();
+    particles.forEach(p => {
+      const from = pos[p.from];
+      const to   = pos[p.to];
+      if (!from || !to) return;
+
+      const cp    = ctrlPoint(from, to, p.r, p.cw);
+      const pt    = bezierPt(p.t, from, cp, to);
+      const alpha = p.faded ? 0.40 : 0.92;
+      const core  = p.faded ? 4    : 6;
+
+      // Halo exterior
+      const grd = ctx.createRadialGradient(pt.x, pt.y, 0, pt.x, pt.y, core + 7);
+      grd.addColorStop(0, p.color + 'cc');
+      grd.addColorStop(1, p.color + '00');
+      ctx.save();
+      ctx.globalAlpha = alpha * 0.45;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, core + 7, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Punto central
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(pt.x, pt.y, core, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      ctx.restore();
+
+      // Avanzar partícula
+      p.t += p.speed;
+      if (p.t > 1) p.t = 0;
+    });
+  });
+
+  // Bucle de animación a ~60 fps
+  (function loop() {
+    net.redraw();
+    requestAnimationFrame(loop);
+  })();
+</script>
+</body>
+</html>
