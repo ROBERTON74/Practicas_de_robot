@@ -32,7 +32,7 @@ Aplicación web para alumnos universitarios que permite realizar pruebas a trav�
 | Repositorio | Rol |
 |---|---|
 | ReNoLabs | Backend del profesor (Node.js) — clonado dentro del contenedor de nuestro backend |
-| vrisa | Frontend (Vue.js) — pendiente de desarrollar |
+| vrisa | Frontend (Vue.js) — version clasica funcional y version moderna en rama `frontend-modernizacion` |
 | rip-js-server | Protocolo de comunicación con el robot |
 
 ### Flujo completo
@@ -358,7 +358,7 @@ Muestra: LICENSE, README.md, doc, docker, fixtures, package.json, public, src, t
 - [ ] **Eliminar código debug** — quitar el `window.onerror` y el try-catch añadidos al load handler de `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml` (líneas 5029-5055). Son herramientas de diagnóstico temporales.
 - [ ] **Cinemática SCARA del DOBOT M1** — OPCIONAL, de momento el modelo funciona con geometría Magician. Ver sección "PENDIENTE: Corrección cinemática SCARA" si se quiere retomar.
 - [ ] Conectar rip-js-server a robot real cuando el profesor lo indique
-- [x] Preparación para GitHub: .gitignore y .dockerignore configurados según reglas del profesor
+- [/] Subida a GitHub en curso (URL corregida, pendiente push final)
 - [ ] Entregar repositorio al profesor
 
 ---
@@ -869,3 +869,458 @@ docker-compose up --build vrisa -d
 ---
 
 *Actualizar este archivo cada vez que se complete una tarea o se tome una decisión técnica relevante.*
+
+---
+
+## Registro de trabajo — 2026-05-25
+
+### Regla de documentación confirmada
+
+- A partir de esta fecha, **todo cambio, problema, decisión, prueba, actualización, tarea pendiente o trabajo descartado debe quedar registrado en la documentación**, principalmente en este `CLAUDE.md`.
+- Se permite editar y ampliar `CLAUDE.md`, pero **no borrar historial existente**. Las correcciones se documentan como nuevas notas o actualizaciones.
+
+### Confirmación técnica sobre frontend
+
+- `vrisa` es el frontend del proyecto y está construido con **Vue.js**.
+- Node.js se usa para instalar dependencias y compilar la aplicación Vue durante el build. En Docker, el frontend compilado se sirve con **nginx**.
+- El JavaScript de la interfaz lo ejecuta el **navegador del alumno**, no Node.js.
+- Bootstrap se usa en la interfaz/simulaciones, especialmente en el DOBOT M1.
+
+### Trabajo realizado — DOBOT M1 / Control Cartesiano
+
+- Problema reportado: en la actividad **Robot DOBOT M1**, dentro de la interfaz gráfica, la pestaña **Control Cartesiano** mostraba separado el bloque `Movimientos Incrementales` respecto a `Velocidad JOG` y `Modo de PTP`.
+- Alcance acordado: tocar solo este bloque; `Control Articular` y `Programación` estaban correctos y no debían modificarse funcionalmente.
+- Archivo modificado: `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml`.
+- Cambios aplicados:
+  - `#panel4` pasa de `display:flex` a `display:inline-flex` para que el contenedor se ajuste al ancho real de sus hijos.
+  - Se fuerzan `margin`, `padding`, `flex` y `float` de `panelIncrementales`, `panelVelocidadJOG3` y `panelModo` para evitar que EjsS/Bootstrap generen espacio automático entre paneles.
+  - Se actualizan las propiedades dinámicas `linkProperty("CSS")` de EjsS para mantener esos estilos durante la ejecución.
+  - Se refuerza el script `fixCartesianLayout()` para ejecutarse al cargar y repetirse durante los primeros segundos, porque EjsS puede reescribir estilos después del primer render.
+  - Se eliminó una segunda cabecera XML duplicada al inicio del `.xhtml`, porque podía volver inválido el documento al desplegar.
+  - Se dejó una sola instancia `new LabInstance("localhost", "8080")`, igual que en la simulación de referencia del Magician, para evitar dobles conexiones no relacionadas con este ajuste visual.
+- Despliegue realizado:
+  - Copiado el `.xhtml` corregido al contenedor `docker-vrlabs_node-1` en:
+    `/home/node/app/public/views/6a8f4d06-4d65-462d-b321-a79a8e12878c/DOBOTM1_LaboratorioRemoto_Simulation.xhtml`
+  - Verificado dentro del contenedor que el archivo desplegado contiene `inline-flex`, `panelVelocidadJOG3` y `cartesianFixTimer`.
+- Estado: **pendiente de verificación visual final en navegador**. Recargar `http://localhost:8082/vr-isa/`, entrar a `Robot DOBOT M1` y revisar `Control > Control Cartesiano`.
+
+### Actualización — DOBOT M1 / Control Cartesiano sigue separado
+
+- Verificación del usuario: tras el primer arreglo, los bloques seguían apareciendo separados.
+- Segunda corrección aplicada en `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml`:
+  - Se abandonó la solución basada solo en `inline-flex`, porque no resolvió la separación visual.
+  - Se fijó `panel4` como contenedor `position: relative`, `display: block`, `width/min-width: 712px` y `height: 224px`.
+  - Se cambió `panelIncrementales` de `Width 310` a `Width 410`, igual que la referencia del Magician y la fila inferior `Punto destino`.
+  - Se posicionaron explícitamente los tres bloques:
+    - `panelIncrementales`: `left: 0px`, `width: 410px`
+    - `panelVelocidadJOG3`: `left: 410px`, `width: 150px`
+    - `panelModo`: `left: 560px`, `width: 152px`
+  - Se actualizó también `fixCartesianLayout()` con esas posiciones absolutas para reimponerlas tras el render de EjsS.
+- Despliegue realizado de nuevo con `docker cp` al contenedor `docker-vrlabs_node-1`.
+- Verificado dentro del contenedor que el archivo desplegado contiene `width: 712px`, `left: 410px` y `left: 560px`.
+- Estado: **pendiente de nueva verificación visual en navegador**. Usar `Ctrl+F5` o limpiar caché del iframe si el navegador insiste en mostrar la versión anterior.
+
+### Actualización — duplicado de vistas M1 y caché
+
+- Se descubrió que MySQL tenía **dos registros** en `Views` con el mismo nombre `DOBOTM1_LaboratorioRemoto`:
+  - `6a8f4d06-4d65-462d-b321-a79a8e12878c` creado el 2026-05-05.
+  - `b7d5517b-aca9-4f05-b7b3-59e0e98355ec` creado el 2026-05-11.
+- `ReNoLabs/src/views.js` usa `findOne({ where: { name: activity.viewName }, order: [['updatedAt', 'DESC']] })`, por lo que la vista activa es la más reciente (`b7d5517b...`).
+- Se copió el `DOBOTM1_LaboratorioRemoto_Simulation.xhtml` corregido a **ambas carpetas** dentro del contenedor para eliminar la ambigüedad.
+- Se verificó que ambas copias contienen `width: 712px`.
+- Se modificó `ReNoLabs/src/templates/remote_lab.ejs` para añadir un parámetro de versión al iframe:
+  - Antes: `http://localhost/views/<%= view %>`
+  - Ahora: `http://localhost/views/<%= view %>?v=<%= Date.now() %>`
+- Motivo: evitar que el navegador mantenga en caché una versión anterior de la simulación dentro del iframe.
+- Se reinició `docker-vrlabs_node-1` para que Express cargue la plantilla EJS actualizada.
+- Verificación posterior:
+  - `docker-vrlabs_node-1` volvió a estar activo correctamente.
+  - `remote_lab.ejs` dentro del contenedor contiene `?v=<%= Date.now() %>`.
+  - La vista activa `b7d5517b...` contiene `width: 712px`.
+- Estado: pendiente de que el usuario vuelva a entrar a la actividad o recargue la página para confirmar visualmente.
+
+### Verificación de funcionamiento — 2026-05-25
+
+- Contenedores activos:
+  - `proyectorobot_universitario-vrisa-1`
+  - `proyectorobot_universitario-backend-1`
+  - `proyectorobot_universitario-rip-server-1`
+  - `docker-vrlabs_node-1`
+  - `docker-vrlabs_db-1`
+  - `proyectorobot_universitario-db-1`
+- `vrisa` responde correctamente:
+  - `GET http://localhost:8082/vr-isa/` -> HTTP 200.
+- Backend propio responde correctamente:
+  - `GET http://localhost:3000/` -> HTTP 200, mensaje: `API Robot Universitario funcionando correctamente`.
+- ReNoLabs responde correctamente en login:
+  - `POST http://localhost/login` con `admin/admin` -> HTTP 200 y devuelve JWT.
+- Vista activa del DOBOT M1 responde correctamente:
+  - `GET http://localhost/views/b7d5517b-aca9-4f05-b7b3-59e0e98355ec/DOBOTM1_LaboratorioRemoto_Simulation.xhtml` -> HTTP 200.
+  - Confirmado que el archivo servido contiene el arreglo `width: 712px`.
+- Nota: `GET http://localhost/` devuelve HTTP 404. Esto no indica caída del sistema; la ruta raíz de ReNoLabs no sirve una página directa útil en esta configuración. La prueba válida es `/login` y las rutas `/views/...`.
+- Estado general: **aplicación levantada y servicios principales funcionando**. Queda pendiente solo confirmar visualmente en navegador que el bloque de Control Cartesiano aparece unido.
+
+### Correccion de error XHTML - DOBOT M1
+
+- Problema reportado por el usuario: al entrar al DOBOT M1 aparecia arriba una caja roja del navegador con:
+  - `This page contains the following errors`
+  - `error on line 4803 at column 21: xmlParseEntityRef: no name`
+- Causa identificada:
+  - El script anadido para `fixCartesianLayout()` contenia `if (panel4 && targets.every(...))`.
+  - En un archivo `.xhtml`, el caracter `&` debe escaparse si el script no esta dentro de CDATA.
+  - El navegador interpretaba el primer `&` de `&&` como inicio de una entidad XML invalida, por eso mostraba `xmlParseEntityRef: no name`.
+- Correccion aplicada:
+  - Se cambio `&&` por `&amp;&amp;` en la condicion de `fixCartesianLayout()`.
+  - El archivo local `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml` valida como XML (`XML OK`).
+  - Se desplego de nuevo el `.xhtml` corregido en las dos carpetas M1 dentro del contenedor:
+    - `6a8f4d06-4d65-462d-b321-a79a8e12878c`
+    - `b7d5517b-aca9-4f05-b7b3-59e0e98355ec`
+- Estado: pendiente de recarga visual en navegador para confirmar que desaparece la caja roja.
+
+### Ajuste de alineacion final - DOBOT M1 Control Cartesiano
+
+- Problema reportado por el usuario: aunque los bloques superiores ya estaban juntos, el conjunto superior no coincidia exactamente con la fila inferior (`Punto destino`, `Velocidad PTP`, `Efector Final`).
+- Nueva decision de layout:
+  - `panel4` y `panel5` deben tener el mismo ancho total: `712px`.
+  - Ambos deben arrancar en la misma posicion horizontal.
+  - La fila superior y la fila inferior usan las mismas columnas:
+    - Columna 1: `left: 0px`, `width: 410px`
+    - Columna 2: `left: 410px`, `width: 150px`
+    - Columna 3: `left: 560px`, `width: 152px`
+- Cambios aplicados en `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml`:
+  - CSS fijo para `#panel5`, `#panelPuntoDestino`, `#panelVelocidadPTP` y `#panelEfectorFinal`.
+  - `linkProperty("CSS")` actualizado para esos mismos elementos.
+  - `fixCartesianLayout()` ampliado con `bottomTargets` para reimponer la alineacion de la fila inferior igual que en la fila superior.
+- Validacion:
+  - Archivo local valida como XML (`XML OK`).
+  - Desplegado en las dos carpetas M1 (`6a8...` y `b7d...`).
+  - Vista activa `b7d...` responde HTTP 200 y contiene `panel5`, `bottomTargets` y `&amp;&amp;`.
+- Estado: pendiente de confirmacion visual del usuario en navegador.
+
+### Verificacion de las 4 actividades en la web principal - 2026-05-25
+
+- Objetivo del usuario: asegurar que en la web principal funcionan las 4 actividades del laboratorio.
+- Actividades verificadas en MySQL (`Activities`):
+  - `Air Flow Levitation`
+  - `Robot DOBOT Magician`
+  - `Sistemas Lineales`
+  - `Robot DOBOT M1`
+- Las 4 actividades estan asignadas al usuario `admin` en `UserActivities`.
+- Las 4 actividades tienen imagen configurada y accesible desde `vrisa`:
+  - `Dobot.png` -> HTTP 200
+  - `DobotM1.jpg` -> HTTP 200
+  - `Hover3DoF.png` -> HTTP 200
+  - `sistemas_lineales.png` -> HTTP 200
+- Las 4 vistas principales responden HTTP 200:
+  - Air Flow Levitation -> `AirLevitation_Remote_ReNoLabs_Simulation.xhtml`
+  - Robot DOBOT Magician -> `DOBOTMagician_LaboratorioRemoto_Simulation.xhtml`
+  - Sistemas Lineales -> `Bode_Simulation.xhtml`
+  - Robot DOBOT M1 -> `DOBOTM1_LaboratorioRemoto_Simulation.xhtml`
+- Login verificado:
+  - `POST http://localhost/login` con `admin/admin` devuelve JWT.
+- Flujo `request_activity` verificado una por una:
+  - `Air Flow Levitation` -> OK, devuelve token de actividad.
+  - `Robot DOBOT Magician` -> OK, devuelve token de actividad.
+  - `Sistemas Lineales` -> OK, devuelve token de actividad.
+  - `Robot DOBOT M1` -> OK, devuelve token de actividad.
+- Nota importante:
+  - ReNoLabs solo permite **una actividad activa por usuario al mismo tiempo**.
+  - Al probar varias seguidas, las siguientes pueden devolver 401 con `Only one activity is allowed at the same time`.
+  - Para verificar una por una se reinicio `docker-vrlabs_node-1` entre pruebas, liberando la sesion activa.
+- Observaciones de logs:
+  - En actividades con controlador DOBOT aparece `Error: spawn sudo ENOENT`. Esto ya ocurria al iniciar el controlador dentro del contenedor porque no existe `sudo`; aun asi `request_activity` devuelve token y la vista/simulacion carga. Es un tema del controlador/hardware real, no de que la actividad desaparezca de la web principal.
+  - En Sistemas Lineales aparece `Adapter: stop is NOT Implemented...` al reiniciar/cortar, relacionado con el adaptador C.
+- Estado final:
+  - Se reinicio `docker-vrlabs_node-1` al terminar para dejar limpio el estado tras las pruebas.
+  - Resultado: **las 4 actividades estan disponibles, asignadas, con imagen, vista accesible y flujo de inicio autorizado**.
+
+### Cierre de sesion de trabajo - 2026-05-25
+
+- El usuario confirma que por ahora se deja el trabajo y se retomara mas tarde.
+- Reglas principales confirmadas para futuras sesiones:
+  - No cambiar estructura del proyecto.
+  - No cambiar puertos.
+  - No cambiar conexiones base entre servicios.
+  - No modificar arquitectura Docker ni nombres de servicios salvo autorizacion explicita.
+  - Hacer cambios pequenos, controlados y documentados.
+  - Registrar todo en `CLAUDE.md`.
+- Puertos/conexiones que deben respetarse:
+  - `vrisa`: `8082:80`
+  - ReNoLabs: `80:8080`
+  - MySQL ReNoLabs: `3307:3306`
+  - Backend propio: `3000:3000`
+  - MariaDB propia: `3308:3306`
+  - `rip-js-server`: `2055:2055`
+- Cambios realizados durante esta sesion:
+  - Corregido layout del DOBOT M1 en `Control Cartesiano`.
+  - Corregida alineacion entre fila superior e inferior del bloque cartesiano.
+  - Corregido error XHTML `xmlParseEntityRef: no name`.
+  - Copiado el `.xhtml` corregido a las dos vistas M1 existentes en el contenedor.
+  - Detectado y documentado duplicado de vistas M1 en MySQL.
+  - Anadido parametro anti-cache al iframe de `remote_lab.ejs`.
+  - Verificadas las 4 actividades principales de la web.
+- Estado al cerrar:
+  - Aplicacion levantada.
+  - Login `admin/admin` funcionando.
+  - Las 4 actividades estan disponibles en MySQL y asignadas a `admin`.
+  - Las 4 imagenes y vistas responden HTTP 200.
+  - ReNoLabs fue reiniciado al final de las pruebas para limpiar sesiones activas.
+- Pendiente para la proxima sesion:
+  - Confirmar visualmente en navegador que el layout final del DOBOT M1 sigue correcto tras recarga.
+  - Si se quiere limpiar tecnicamente el proyecto, revisar con cuidado el duplicado de vistas `DOBOTM1_LaboratorioRemoto`, pero no eliminar nada sin autorizacion.
+
+### Confirmacion visual de funcionamiento - 2026-05-26
+
+- El usuario confirma que la web ya esta funcionando bien.
+- Se da por validado visualmente el estado final tras los cambios anteriores, incluyendo el acceso a la web principal y el ajuste del DOBOT M1.
+- Estado: **funcionamiento correcto confirmado por el usuario**.
+
+### Inicio de modernizacion frontend - 2026-05-26
+
+- Objetivo nuevo del usuario: modernizar el frontend de `vrisa` para hacerlo mas profesional visualmente, reutilizando lo que ya existe:
+  - mismas fotos/imagenes del proyecto;
+  - Bootstrap y dependencias actuales siempre que sea razonable;
+  - mismas rutas, backend, actividades y conexiones existentes.
+- Regla de proteccion:
+  - La version actual del frontend debe conservarse como version estable.
+  - No se debe romper ni sustituir directamente el frontend actual sin confirmacion.
+  - El redisenio visual se trabajara en una rama separada.
+- Rama creada para el trabajo nuevo:
+  - `frontend-modernizacion`
+- Rama estable de referencia:
+  - `main`
+- Decision sobre puertos:
+  - Se mantiene la regla de no cambiar puertos.
+  - Como ambas versiones usarian el mismo puerto de `vrisa` (`8082:80`), solo se usara una version a la vez.
+  - No se intentara levantar simultaneamente el frontend actual y el frontend moderno en el mismo puerto.
+- Estado inicial:
+  - Rama `frontend-modernizacion` creada.
+  - Todavia no se han hecho cambios visuales del nuevo frontend.
+  - Antes de modificar componentes, revisar estructura actual de `vrisa` y plantear una estrategia que permita volver al frontend clasico con facilidad.
+
+### Flujo elegido para alternar frontend clasico/moderno - 2026-05-26
+
+- El usuario quiere un uso sencillo:
+  - cerrar la web que este viendo;
+  - activar la otra version del frontend;
+  - abrir de nuevo la misma URL.
+- URL unica de uso:
+  - `http://localhost:8082/vr-isa/`
+- Scripts creados:
+  - `scripts/usar-frontend-clasico.ps1`
+  - `scripts/usar-frontend-moderno.ps1`
+- Funcionamiento de los scripts:
+  - cambian a la rama correspondiente si es necesario;
+  - paran el servicio Docker `vrisa`;
+  - reconstruyen y levantan de nuevo solo `vrisa`;
+  - mantienen el mismo puerto `8082:80`.
+- Comandos de uso desde la raiz del proyecto:
+  - `powershell -ExecutionPolicy Bypass -File scripts/usar-frontend-clasico.ps1`
+  - `powershell -ExecutionPolicy Bypass -File scripts/usar-frontend-moderno.ps1`
+- Regla de seguridad:
+  - Si hay cambios sin guardar y el script necesita cambiar de rama, se detiene y avisa.
+  - Esto evita perder trabajo o mezclar el frontend clasico con el moderno.
+- Estado:
+  - El mecanismo de alternancia queda preparado.
+  - Nota historica: en este punto todavia no se habia redisenado el frontend moderno. El redisenio inicial se documento despues en la seccion "Primera version visual del frontend moderno".
+
+### Primera version visual del frontend moderno - 2026-05-26
+
+- Rama de trabajo:
+  - `frontend-modernizacion`
+- Objetivo de esta primera pasada:
+  - modernizar la apariencia sin cambiar backend, rutas, puertos ni flujo funcional;
+  - mantener Bootstrap y los assets existentes;
+  - proteger el frontend clasico en `main`.
+- Archivos modificados en `vrisa`:
+  - `src/App.vue`
+  - `src/components/NavBar.vue`
+  - `src/components/Login.vue`
+  - `src/components/Home.vue`
+  - `src/components/RemoteLab.vue`
+- Cambios visuales aplicados:
+  - paleta global mas sobria basada en verde tecnico, azul de acento, fondo claro y paneles blancos;
+  - barra superior oscura, mas compacta y profesional;
+  - login redisenado con foto real existente de `public/images/vrlabs/front.jpg`;
+  - tarjetas de actividades mas limpias, con imagen grande, estado disponible/ocupada y boton de entrada;
+  - panel lateral de ultimos experimentos con estilo de lista;
+  - pantalla de laboratorio remoto reorganizada con cabecera, temporizador y acciones mas claras.
+- Archivo nuevo creado en la raiz:
+  - `como arrancar.md`
+- Contenido del archivo:
+  - pasos para abrir PowerShell en la carpeta del proyecto;
+  - comando para activar frontend moderno;
+  - comando para activar frontend clasico;
+  - URL unica `http://localhost:8082/vr-isa/`;
+  - aviso de seguridad sobre cambios sin guardar.
+- Verificacion:
+  - `npm.cmd run build` en `vrisa` compila correctamente.
+  - Quedan warnings no bloqueantes sobre tamano de assets y `caniuse-lite` desactualizado.
+  - Se reconstruyo y levanto `vrisa` con Docker usando la version moderna.
+  - `GET http://localhost:8082/vr-isa/` responde HTTP 200.
+- Ajuste adicional:
+  - Los scripts `usar-frontend-clasico.ps1` y `usar-frontend-moderno.ps1` ahora comprueban el codigo de salida de `git` y `docker`.
+  - Si Docker falla por permisos o por cualquier otro error, el script debe detenerse en vez de mostrar un mensaje de exito incorrecto.
+
+### Pausa de trabajo para revision posterior - 2026-05-26
+
+- El usuario pausa la sesion para comer.
+- Al volver, el objetivo sera revisar con calma todos los cambios realizados y confirmar que todo queda correctamente documentado y actualizado.
+- Estado de rama:
+  - Rama actual: `frontend-modernizacion`.
+  - Rama estable protegida: `main`.
+- Estado funcional antes de la pausa:
+  - Frontend moderno levantado en Docker.
+  - URL de prueba: `http://localhost:8082/vr-isa/`.
+  - La URL responde HTTP 200.
+- Verificaciones ejecutadas:
+  - `npm.cmd run build` dentro de `vrisa`: correcto.
+  - `docker compose up --build vrisa -d` mediante script moderno: correcto tras ejecutar con permisos suficientes.
+  - `Invoke-WebRequest http://localhost:8082/vr-isa/`: HTTP 200.
+- Archivos modificados o creados relacionados con la modernizacion:
+  - `vrisa/src/App.vue`
+  - `vrisa/src/components/NavBar.vue`
+  - `vrisa/src/components/Login.vue`
+  - `vrisa/src/components/Home.vue`
+  - `vrisa/src/components/RemoteLab.vue`
+  - `scripts/usar-frontend-clasico.ps1`
+  - `scripts/usar-frontend-moderno.ps1`
+  - `como arrancar.md`
+  - `CLAUDE.md`
+- Cambios previos que siguen presentes en la rama:
+  - `ReNoLabs/src/templates/remote_lab.ejs`
+  - `dobot_m1_view/DOBOTM1_LaboratorioRemoto_Simulation.xhtml`
+  - `vrisa/src/assets/LabControl.js`
+- Pendientes para cuando vuelva el usuario:
+  - Revisar visualmente el frontend moderno en navegador.
+  - Investigar por que en el frontend moderno, al revisar todos los robots/actividades, no todos funcionan correctamente.
+  - Separar esa investigacion entre problema visual del frontend moderno, problema de inicio de actividad, problema de iframe/vista remota o problema previo del controlador/backend.
+  - Confirmar si el estilo visual gusta o ajustar colores, espaciados, tarjetas, login y pantalla de laboratorio.
+  - Revisar si conviene commitear primero los cambios funcionales previos y despues los cambios de modernizacion en commits separados.
+  - Confirmar que `como arrancar.md` es suficientemente claro para alternar entre clasico y moderno.
+
+### Tarea pendiente detectada por el usuario - Robots/actividades en frontend moderno
+
+- El usuario quiere revisar por que en el frontend moderno no todos los robots/actividades funcionan al probarlos.
+- Objetivo de la proxima revision:
+  - probar cada actividad una por una desde el frontend moderno;
+  - comprobar si el fallo ocurre solo en la version moderna o tambien en la clasica;
+  - revisar consola/navegador, peticiones HTTP, logs Docker y respuesta de ReNoLabs;
+  - confirmar si el problema esta en el redisenio de `RemoteLab.vue`, en el iframe, en el estado de actividad ocupada, en cache, o en el controlador/backend.
+- Esta tarea queda pendiente y no debe olvidarse al retomar la sesion.
+
+### Aclaracion sobre Bootstrap en frontend moderno - 2026-05-26
+
+- El usuario pregunta si todo lo hecho en el frontend moderno esta hecho con Bootstrap.
+- Confirmacion tecnica:
+  - El frontend moderno mantiene Bootstrap como base de componentes y utilidades.
+  - Se siguen usando clases Bootstrap como `navbar`, `container-fluid`, `btn`, `btn-success`, `btn-outline-danger`, `dropdown`, `input-group`, `alert`, `row` y utilidades responsive.
+  - Ademas de Bootstrap, se ha anadido CSS propio en los componentes Vue para conseguir un acabado mas profesional: paleta, sombras, layout de login, tarjetas de actividades, paneles, espaciados y comportamiento responsive.
+- Conclusion:
+  - No es Bootstrap puro sin CSS adicional.
+  - Es Bootstrap + CSS propio controlado, reutilizando la base actual del proyecto.
+
+### Revision de documentacion - 2026-05-27
+
+- Se retoma la rama `frontend-modernizacion` para revisar especialmente documentacion.
+- Estado revisado:
+  - Rama actual: `frontend-modernizacion`.
+  - Hay cambios sin commit en documentacion, scripts, frontend moderno y ajustes funcionales previos.
+  - `como arrancar.md` existe en la raiz y explica como activar frontend moderno o clasico.
+- Correcciones documentales realizadas:
+  - Actualizada la tabla de repositorios para reflejar que `vrisa` ya tiene version clasica funcional y version moderna en rama separada.
+  - Aclarada una frase historica que decia que el frontend moderno aun no estaba redisenado: ahora queda marcada como nota del momento anterior al redisenio inicial.
+- Recordatorio importante:
+  - Los scripts de alternancia cambian de rama solo si el arbol de trabajo esta limpio.
+  - Mientras existan cambios sin commit, intentar pasar de `frontend-modernizacion` a `main` con el script clasico puede detenerse para proteger el trabajo.
+  - Antes de usar comodamente los scripts para alternar clasico/moderno conviene revisar, ordenar y commitear los cambios.
+
+### Revision documental sobre funcionamiento del robot - 2026-05-28
+
+- Objetivo del usuario:
+  - revisar la documentacion antes de hacer nada para saber si el robot puede funcionar.
+- Conclusion segun la documentacion actual:
+  - La web, ReNoLabs, MySQL, `vrisa` y las vistas/simulaciones pueden funcionar en entorno local con Docker.
+  - Las actividades pueden aparecer, iniciar sesion, devolver token y cargar la interfaz grafica/simulacion.
+  - Esto NO equivale necesariamente a confirmar que el robot fisico real funcione conectado.
+- Estado del entorno de desarrollo:
+  - `rip-js-server` esta documentado como `DummyServer + TestBoard`, es decir, simulador de hardware para desarrollo.
+  - `documentacion/estado_proyecto_y_conceptos_tecnicos.md` indica que DummyServer permite acceder a la simulacion sin robot real.
+  - El robot fisico real quedaria para produccion o para cuando el profesor conecte/sustituya DummyServer por el adaptador real correspondiente.
+- DOBOT / hardware real:
+  - En `ReNoLabs/src/hardware/Dobot/Adapter.js`, el adaptador DOBOT intenta arrancar el controlador con `spawn('sudo', ['python3', ...])`.
+  - En los logs ya documentados aparece `Error: spawn sudo ENOENT` para actividades con controlador DOBOT.
+  - Esto significa que dentro del contenedor actual no existe `sudo`, por lo que el controlador real DOBOT no queda confirmado como operativo en este entorno Docker local.
+  - Aun con ese error, la actividad puede devolver token y la vista/simulacion puede cargar; por eso hay que distinguir entre simulacion funcional y hardware real funcional.
+- Estado practico:
+  - Para simulacion y demostracion de interfaz: **si puede funcionar**.
+  - Para controlar un robot fisico real desde este entorno actual: **no queda confirmado** y probablemente requiere ajustes del controlador/adaptador, permisos, dependencias de hardware y/o indicaciones del profesor.
+- Pendiente recomendado:
+  - Si el objetivo pasa a ser robot fisico real, revisar con el profesor:
+    - que controlador debe usarse para DOBOT Magician/M1;
+    - si debe ejecutarse con `sudo` dentro del contenedor o cambiarse el arranque;
+    - que puertos/dispositivos fisicos deben exponerse al contenedor;
+    - si `rip-js-server` debe seguir como DummyServer o sustituirse por un servidor/adaptador real.
+
+### Ajuste visual Home frontend moderno - 2026-05-28
+
+- Peticion del usuario:
+  - En la pantalla `#/home`, las cuatro tarjetas/contenedores de actividades debian ocupar todo el ancho disponible del area principal, antes del panel lateral de `Ultimos experimentos`.
+- Archivo modificado:
+  - `vrisa/src/components/Home.vue`
+- Cambio aplicado:
+  - `.activity-grid` pasa a usar `grid-template-columns: repeat(4, minmax(0, 1fr))` en escritorio.
+  - Las cuatro actividades se reparten en cuatro columnas flexibles y ocupan el ancho completo disponible del bloque principal.
+  - En pantallas medianas se mantiene responsive con dos columnas.
+  - En pantallas pequenas se mantiene una columna.
+  - Se ajusta ligeramente el ancho del panel lateral de datos de `340px` a `320px` para dar mas espacio a las tarjetas.
+- Verificacion:
+  - `npm.cmd run build` en `vrisa` compila correctamente.
+  - Persisten solo warnings no bloqueantes de tamano de assets, `caniuse-lite` desactualizado y advertencias de Node.
+
+### Ajuste de ancho global Home frontend moderno - 2026-05-28
+
+- Problema observado por el usuario:
+  - Aunque las tarjetas estaban en cuatro columnas, seguia apareciendo un margen grande a la izquierda.
+  - Las tarjetas no llegaban hasta el inicio izquierdo util de la pagina porque el contenedor general estaba centrado con ancho maximo.
+- Causa:
+  - `.app-main` en `vrisa/src/App.vue` usaba `width: min(1480px, calc(100% - 32px))` y `margin: 0 auto`.
+  - En pantallas anchas esto centraba todo el contenido y dejaba espacio vacio lateral.
+- Archivo modificado:
+  - `vrisa/src/App.vue`
+- Cambio aplicado:
+  - `.app-main` pasa a `width: 100%`, `margin: 0` y padding lateral controlado.
+  - En escritorio el contenido usa casi todo el ancho disponible de la pagina.
+  - En movil se mantiene padding reducido.
+- Verificacion:
+  - `npm.cmd run build` en `vrisa` compila correctamente.
+  - Se reconstruyo/arranco `vrisa`; aunque el comando supero el timeout, el contenedor quedo activo.
+  - `GET http://localhost:8082/vr-isa/` responde HTTP 200.
+
+### Pausa para comer - revision visual pendiente - 2026-05-28
+
+- El usuario pausa para comer.
+- Estado antes de la pausa:
+  - Rama actual: `frontend-modernizacion`.
+  - Frontend moderno activo en `http://localhost:8082/vr-isa/`.
+  - `vrisa` responde HTTP 200.
+  - Se aplicaron dos ajustes consecutivos al Home moderno:
+    - las 4 tarjetas de actividades usan 4 columnas flexibles;
+    - el contenedor global `.app-main` ya no centra el contenido con ancho maximo, usa `width: 100%`.
+- Pendiente al volver:
+  - Abrir `http://localhost:8082/vr-isa/#/home`.
+  - Recargar con `Ctrl + F5`.
+  - Confirmar visualmente que las tarjetas empiezan mucho mas cerca del borde izquierdo util y ocupan mejor todo el ancho hasta el panel lateral de `Ultimos experimentos`.
+  - Si todavia queda demasiado margen o las tarjetas no ocupan exactamente lo esperado, revisar `Home.vue` y `App.vue` de nuevo.
+- Nota tecnica:
+  - El ultimo `docker compose up --build vrisa -d` lanzado por el script supero el timeout del comando, pero despues se verifico que el contenedor `proyectorobot_universitario-vrisa-1` quedo activo y la URL devuelve HTTP 200.
+
+### Confirmacion visual Home frontend moderno - 2026-05-28
+
+- El usuario confirma tras revisar en navegador que el ajuste de ancho del Home moderno ya esta bien hecho.
+- Estado:
+  - Las cuatro tarjetas de actividades se ven correctamente repartidas.
+  - El contenido ya aprovecha el ancho de pantalla esperado.
+  - Este ajuste visual queda cerrado como correcto.
+- Pendiente general:
+  - Antes de subir a GitHub o entregar, revisar/ordenar commits y decidir que hacer con la limpieza de seguridad minima.

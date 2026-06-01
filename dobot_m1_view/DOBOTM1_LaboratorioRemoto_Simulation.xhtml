@@ -16,13 +16,12 @@
          In a flex container this redistributes free space creating unwanted gaps.
          !important overrides EjsS inline styles. */
       #panel4 {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        justify-content: flex-start !important;
-        align-items: flex-start !important;
-        gap: 0 !important;
+        display: block !important;
+        position: relative !important;
+        width: 712px !important;
+        min-width: 712px !important;
+        height: 224px !important;
         margin: 0 !important;
-        width: fit-content !important;
         padding: 0 !important;
       }
       #panel4 > * {
@@ -33,10 +32,57 @@
       #panelVelocidadJOG3,
       #panelModo,
       #panelIncrementales {
+        display: block !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
         padding: 0 !important;
         flex: 0 0 auto !important;
+        float: none !important;
+        position: absolute !important;
+        top: 0 !important;
+      }
+      #panelIncrementales {
+        left: 0 !important;
+        width: 410px !important;
+      }
+      #panelVelocidadJOG3 {
+        left: 410px !important;
+        width: 150px !important;
+      }
+      #panelModo {
+        left: 560px !important;
+        width: 152px !important;
+      }
+      #panel5 {
+        display: block !important;
+        position: relative !important;
+        width: 712px !important;
+        min-width: 712px !important;
+        height: 100px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #panelPuntoDestino,
+      #panelVelocidadPTP,
+      #panelEfectorFinal {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+      }
+      #panelPuntoDestino {
+        left: 0 !important;
+        width: 410px !important;
+      }
+      #panelVelocidadPTP {
+        left: 410px !important;
+        width: 150px !important;
+      }
+      #panelEfectorFinal {
+        left: 560px !important;
+        width: 152px !important;
       }
     </style>
     <script src="_ejs_library/scripts/common_script.js"></script>
@@ -3282,14 +3328,14 @@ var lab = new LabInstance("localhost", "8080");lab.connect();
   move_coordinate(4);
 
 }); // HtmlView Page setting action 'OnPress' for element 'r_pos3'
-          _view.panel4.linkProperty("CSS",  function() { return { "display":"flex", "flex-wrap":"nowrap", "justify-content":"flex-start", "align-items":"flex-start", "gap":"0px", "margin":"0px", "padding":"0px" }; } ); // M1: Bloquear layout del contenedor
+          _view.panel4.linkProperty("CSS",  function() { return { "display":"block", "position":"relative", "width":"712px", "min-width":"712px", "height":"224px", "margin":"0px", "padding":"0px" }; } ); // M1: Bloquear layout del contenedor
           _view.panelIncrementales.linkProperty("CSS",  function() { return { "margin-left":"0px", "margin-right":"0px" }; } ); // M1: Forzar márgenes a 0
           _view.panelVelocidadJOG3.linkProperty("CSS",  function() { return { "margin-left":"0px", "margin-right":"0px" }; } ); // M1: Forzar márgenes a 0
           _view.panelModo.linkProperty("CSS",  function() { return { "margin-left":"0px", "margin-right":"0px" }; } ); // M1: Forzar márgenes a 0
-          _view.panel4.linkProperty("CSS",  function() { return { "display":"flex", "flex-wrap":"nowrap", "justify-content":"flex-start", "align-items":"flex-start", "gap":"0px", "margin":"0px", "padding":"0px", "width":"auto" }; } ); // M1: Bloquear layout del contenedor
-          _view.panelIncrementales.linkProperty("CSS",  function() { return { "margin":"0px", "padding":"0px", "flex":"0 0 auto", "min-width":"0px" }; } ); // M1: Forzar márgenes a 0
-          _view.panelVelocidadJOG3.linkProperty("CSS",  function() { return { "margin":"0px", "padding":"0px", "flex":"0 0 auto", "min-width":"0px" }; } ); // M1: Forzar márgenes a 0
-          _view.panelModo.linkProperty("CSS",  function() { return { "margin":"0px", "padding":"0px", "flex":"0 0 auto", "min-width":"0px" }; } ); // M1: Forzar márgenes a 0
+          _view.panel4.linkProperty("CSS",  function() { return { "display":"block", "position":"relative", "width":"712px", "min-width":"712px", "height":"224px", "margin":"0px", "padding":"0px" }; } ); // M1: Bloquear layout del contenedor
+          _view.panelIncrementales.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"0px", "width":"410px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Forzar bloque unido
+          _view.panelVelocidadJOG3.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"410px", "width":"150px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Forzar bloque unido
+          _view.panelModo.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"560px", "width":"152px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Forzar bloque unido
           _view.etiquetaVelocidadJOG3.linkProperty("CSS",  function() { return {   "margin-top":"8px",   "margin-bottom":"8px",   "margin-left":"12px", }; } ); // HtmlView Page linking property 'CSS' for element 'etiquetaVelocidadJOG3'
           _view.velJog.linkProperty("CSS",  function() { return {   "margin-top":"55px", }; } ); // HtmlView Page linking property 'CSS' for element 'velJog'
           _view.velJog.linkProperty("Value",  function() { return vv; }, function(_v) { vv = _v; } ); // HtmlView Page linking property 'Value' for element 'velJog'
@@ -3344,7 +3390,8 @@ var lab = new LabInstance("localhost", "8080");lab.connect();
   modo = 2;
 
 }); // HtmlView Page setting action 'OnCheckOn' for element 'Jump22'
-          _view.panelPuntoDestino.linkProperty("CSS",  function() { return {   "margin-right":"0px", }; } ); // HtmlView Page linking property 'CSS' for element 'panelPuntoDestino'
+          _view.panel5.linkProperty("CSS",  function() { return { "display":"block", "position":"relative", "width":"712px", "min-width":"712px", "height":"100px", "margin":"0px", "padding":"0px" }; } ); // M1: Alinear fila inferior con panel4
+          _view.panelPuntoDestino.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"0px", "width":"410px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Alinear fila inferior
           _view.etiqueta242.linkProperty("CSS",  function() { return {   "margin-top":"8px",   "margin-bottom":"8px",   "margin-left":"10px", }; } ); // HtmlView Page linking property 'CSS' for element 'etiqueta242'
           _view.panel6.linkProperty("CSS",  function() { return {   "margin-top":"10px",   "display":"flex",   "align-items": "center",   "flex-direction":"row", }; } ); // HtmlView Page linking property 'CSS' for element 'panel6'
           _view.panelValores.linkProperty("CSS",  function() { return {   "margin-top":"0px",   "display":"flex",   "align-items": "center",   "flex-direction":"row", }; } ); // HtmlView Page linking property 'CSS' for element 'panelValores'
@@ -3371,7 +3418,7 @@ var lab = new LabInstance("localhost", "8080");lab.connect();
   move_to_point_xyz(xa, yb, zc, rd);
 
 }); // HtmlView Page setting action 'OnChange' for element 'valor_r23'
-          _view.panelVelocidadPTP.linkProperty("CSS",  function() { return {   "margin-left":"0px",   "margin-right":"0px", }; } ); // HtmlView Page linking property 'CSS' for element 'panelVelocidadPTP'
+          _view.panelVelocidadPTP.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"410px", "width":"150px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Alinear fila inferior
           _view.etiquetaVelocidadPTP.linkProperty("CSS",  function() { return {   "margin-top":"8px",   "margin-bottom":"8px",   "margin-left":"12px", }; } ); // HtmlView Page linking property 'CSS' for element 'etiquetaVelocidadPTP'
           _view.velPtp.linkProperty("CSS",  function() { return {   "margin-bottom": "0px", }; } ); // HtmlView Page linking property 'CSS' for element 'velPtp'
           _view.velPtp.linkProperty("Value",  function() { return vv; }, function(_v) { vv = _v; } ); // HtmlView Page linking property 'Value' for element 'velPtp'
@@ -3379,6 +3426,7 @@ var lab = new LabInstance("localhost", "8080");lab.connect();
   lab.send({variable:'action', value: [5,vv,vv]});
 
 }); // HtmlView Page setting action 'OnChange' for element 'velPtp'
+          _view.panelEfectorFinal.linkProperty("CSS",  function() { return { "display":"block", "position":"absolute", "top":"0px", "left":"560px", "width":"152px", "margin":"0px", "padding":"0px", "float":"none" }; } ); // M1: Alinear fila inferior
           _view.etiquetaGrip.linkProperty("CSS",  function() { return {   "margin-top":"8px",   "margin-bottom":"8px",   "margin-left":"12px", }; } ); // HtmlView Page linking property 'CSS' for element 'etiquetaGrip'
           _view.botonDosEstados3.setAction("OffClick", function(_data,_info) {
   lab.send({variable:'action', value: [14, 0, 0]});
@@ -3888,8 +3936,8 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
       ;
 
     _view._addElement(EJSS_INTERFACE.panel,"panelIncrementales", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'panelIncrementales'
-      .setProperty("Width",310) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelIncrementales'
-      .setProperty("CSS",{"margin-left":"0px","margin-right":"0px"})
+      .setProperty("Width",410) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelIncrementales'
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"0px","width":"410px","margin":"0px","padding":"0px"})
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelIncrementales'
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelIncrementales'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelIncrementales'
@@ -4000,7 +4048,7 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
     _view._addElement(EJSS_INTERFACE.panel,"panelVelocidadJOG3", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'panelVelocidadJOG3'
       .setProperty("Width",150) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelVelocidadJOG3'
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelVelocidadJOG3'
-      .setProperty("CSS",{"margin-left":"0px","margin-right":"0px"}) // M1: Margen inicial a 0
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"410px","width":"150px","margin":"0px","padding":"0px"}) // M1: Bloque unido a incrementales
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelVelocidadJOG3'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelVelocidadJOG3'
       ;
@@ -4025,8 +4073,7 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
 
     _view._addElement(EJSS_INTERFACE.panel,"panelModo", _view.panel4) // EJsS HtmlView.HtmlView Page: declaration of element 'panelModo'
       .setProperty("Width",152) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelModo'
-      .setProperty("CSS",{"margin-left":"0px","margin-right":"0px"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'panelModo'
-      .setProperty("CSS",{"margin":"0px","padding":"0px","flex":"0 0 auto"}) // M1: Bloqueo inicial
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"560px","width":"152px","margin":"0px","padding":"0px"}) // EJsS HtmlView Page: setting property 'CSS' for element 'panelModo'
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelModo'
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelModo'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelModo'
@@ -4083,11 +4130,13 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
 
     _view._addElement(EJSS_INTERFACE.panel,"panel5", _view.CartesianPanel) // EJsS HtmlView.HtmlView Page: declaration of element 'panel5'
       .setProperty("ClassName","d-flex")
+      .setProperty("CSS",{"display":"block","position":"relative","width":"712px","min-width":"712px","height":"100px","margin":"0px","padding":"0px"})
       ; // panel5 es hermano de panel4, no hijo — igual que en el Magician original
 
     _view._addElement(EJSS_INTERFACE.panel,"panelPuntoDestino", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'panelPuntoDestino'
       .setProperty("Height",100) // EJsS HtmlView.HtmlView Page: setting property 'Height' for element 'panelPuntoDestino'
       .setProperty("Width",410) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelPuntoDestino'
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"0px","width":"410px","margin":"0px","padding":"0px"})
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelPuntoDestino'
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelPuntoDestino'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelPuntoDestino'
@@ -4151,6 +4200,7 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
     _view._addElement(EJSS_INTERFACE.panel,"panelVelocidadPTP", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'panelVelocidadPTP'
       .setProperty("Height",100) // EJsS HtmlView.HtmlView Page: setting property 'Height' for element 'panelVelocidadPTP'
       .setProperty("Width",150) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelVelocidadPTP'
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"410px","width":"150px","margin":"0px","padding":"0px"})
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelVelocidadPTP'
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelVelocidadPTP'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelVelocidadPTP'
@@ -4177,7 +4227,7 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
     _view._addElement(EJSS_INTERFACE.panel,"panelEfectorFinal", _view.panel5) // EJsS HtmlView.HtmlView Page: declaration of element 'panelEfectorFinal'
       .setProperty("Height",100) // EJsS HtmlView.HtmlView Page: setting property 'Height' for element 'panelEfectorFinal'
       .setProperty("Width",152) // EJsS HtmlView.HtmlView Page: setting property 'Width' for element 'panelEfectorFinal'
-      .setProperty("CSS",{"margin-left":"0px"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'panelEfectorFinal'
+      .setProperty("CSS",{"position":"absolute","top":"0px","left":"560px","width":"152px","margin":"0px","padding":"0px"}) // EJsS HtmlView.HtmlView Page: setting property 'CSS' for element 'panelEfectorFinal'
       .setProperty("Background","White") // EJsS HtmlView.HtmlView Page: setting property 'Background' for element 'panelEfectorFinal'
       .setProperty("BorderStyle","ridge") // EJsS HtmlView.HtmlView Page: setting property 'BorderStyle' for element 'panelEfectorFinal'
       .setProperty("BorderWidth",3) // EJsS HtmlView.HtmlView Page: setting property 'BorderWidth' for element 'panelEfectorFinal'
@@ -4779,29 +4829,58 @@ function DOBOTM1_LaboratorioRemoto_View_0 (_topFrame) {
     //--><!]]></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      (function fixCartesianLayout() {
+      function fixCartesianLayout() {
         var panel4 = document.getElementById('panel4');
-        var targets = ['panelIncrementales', 'panelVelocidadJOG3', 'panelModo'];
-        if (panel4 && targets.every(function(id) { return document.getElementById(id); })) {
-          panel4.style.setProperty('display', 'flex', 'important');
-          panel4.style.setProperty('flex-wrap', 'nowrap', 'important');
-          panel4.style.setProperty('justify-content', 'flex-start', 'important');
-          panel4.style.setProperty('align-items', 'flex-start', 'important');
-          panel4.style.setProperty('gap', '0px', 'important');
-          panel4.style.setProperty('margin', '0px', 'important');
-          panel4.style.setProperty('padding', '0px', 'important');
-          targets.forEach(function(id) {
-            var el = document.getElementById(id);
-            el.style.setProperty('margin-left', '0px', 'important');
-            el.style.setProperty('margin-right', '0px', 'important');
-            el.style.setProperty('padding', '0px', 'important');
-            el.style.setProperty('flex', '0 0 auto', 'important');
-            el.style.setProperty('min-width', '0px', 'important');
-          });
-        } else {
-          setTimeout(fixCartesianLayout, 200);
+        var panel5 = document.getElementById('panel5');
+        var topTargets = [
+          { id: 'panelIncrementales', left: '0px', width: '410px' },
+          { id: 'panelVelocidadJOG3', left: '410px', width: '150px' },
+          { id: 'panelModo', left: '560px', width: '152px' }
+        ];
+        var bottomTargets = [
+          { id: 'panelPuntoDestino', left: '0px', width: '410px' },
+          { id: 'panelVelocidadPTP', left: '410px', width: '150px' },
+          { id: 'panelEfectorFinal', left: '560px', width: '152px' }
+        ];
+        function lockRow(row, height) {
+          row.style.setProperty('display', 'block', 'important');
+          row.style.setProperty('position', 'relative', 'important');
+          row.style.setProperty('width', '712px', 'important');
+          row.style.setProperty('min-width', '712px', 'important');
+          row.style.setProperty('height', height, 'important');
+          row.style.setProperty('margin', '0px', 'important');
+          row.style.setProperty('padding', '0px', 'important');
         }
-      })();
+        function lockChildren(targets) {
+          targets.forEach(function(target) {
+            var el = document.getElementById(target.id);
+            el.style.setProperty('display', 'block', 'important');
+            el.style.setProperty('position', 'absolute', 'important');
+            el.style.setProperty('top', '0px', 'important');
+            el.style.setProperty('left', target.left, 'important');
+            el.style.setProperty('width', target.width, 'important');
+            el.style.setProperty('margin', '0px', 'important');
+            el.style.setProperty('padding', '0px', 'important');
+            el.style.setProperty('float', 'none', 'important');
+          });
+        }
+        if (panel4 &amp;&amp; topTargets.every(function(target) { return document.getElementById(target.id); })) {
+          lockRow(panel4, '224px');
+          lockChildren(topTargets);
+        }
+        if (panel5 &amp;&amp; bottomTargets.every(function(target) { return document.getElementById(target.id); })) {
+          lockRow(panel5, '100px');
+          lockChildren(bottomTargets);
+        }
+      }
+      fixCartesianLayout();
+      window.addEventListener('load', fixCartesianLayout);
+      var cartesianFixTries = 0;
+      var cartesianFixTimer = setInterval(function() {
+        fixCartesianLayout();
+        cartesianFixTries += 1;
+        if (cartesianFixTries >= 50) clearInterval(cartesianFixTimer);
+      }, 100);
     });
   </script>
   </body>

@@ -1,45 +1,41 @@
 <template>
-  <div class="container-fluid">
-    <div class="card">
-      <div class="card-header text-center">
-        <div class="row align-middle">
-          <div v-if="lab.started" class="col">
-            <button v-show="lab.counter == 0" @click="warnStop()" type="button" class="btn btn-outline-danger mb-3"><i
-                class="bi bi-stop"></i>Terminar actividad</button>
-            <h6>Tiempo restante: <span class="text-primary fw-bold">{{ remaining }}</span></h6>
+  <div class="remote-page">
+    <div class="remote-shell vr-panel">
+      <div class="remote-header">
+        <div>
+          <span class="vr-eyebrow">Laboratorio remoto</span>
+          <h1>{{ lab.activity }}</h1>
+        </div>
+        <div class="remote-actions">
+          <div v-if="lab.started" class="session-status">
+            <span>Tiempo restante</span>
+            <strong>{{ remaining }}</strong>
+            <button v-show="lab.counter == 0" @click="warnStop()" type="button" class="btn btn-outline-danger">
+              <i class="bi bi-stop"></i> Terminar
+            </button>
           </div>
-          <div v-else class="col">
+          <div v-else>
             <div v-if="lab.error.length > 0" class="alert alert-warning mt-3" role="alert">{{ lab.error }}</div>
-            <button @click="start()" type="button" class="btn btn-outline-success"><i class="bi bi-play" />Comenzar
-              Actividad</button>
+            <button @click="start()" type="button" class="btn btn-success btn-lg">
+              <i class="bi bi-play"></i> Comenzar actividad
+            </button>
           </div>
         </div>
-        <div v-if="showDescription" class="row">
-          <div class="row mb-3">
-            <h3>¿Estás seguro de que deseas terminar la sesión?</h3>
-          </div>
-          <div class="row">
-            <div class="col"></div>
-            <div class="col"><button @click="cancelStop" class="btn btn-sm btn-outline-primary">No, vuelve a la
-                actividad</button></div>
-            <div class="col"><span class="text-primary">{{ counterMessage }}</span></div>
-            <div class="col"><button @click="stop()" class="btn btn-sm btn-outline-success">Sí, quiero salir de
-                aquí</button></div>
-            <div class="col"></div>
-          </div>
+        <div v-if="showDescription" class="stop-confirm">
+          <h2>Confirmar cierre de sesion</h2>
+          <span>{{ counterMessage }}</span>
+          <button @click="cancelStop" class="btn btn-sm btn-outline-primary">Volver a la actividad</button>
+          <button @click="stop()" class="btn btn-sm btn-success">Salir ahora</button>
         </div>
       </div>
-      <div class="card-body">
 
-        <!-- Remote Laboratory -->
-        <div v-if="lab.started" class="container-fluid">
+      <div class="remote-body">
+        <div v-if="lab.started">
           <slot name="content">
-            <!-- Embedded version -->
-            <div v-show="lab.extern" class="container-fluid" v-html="lab.html"></div>
+            <div v-show="lab.extern" class="remote-frame" v-html="lab.html"></div>
 
-            <!-- Built-in version -->
             <div v-show="!lab.extern" class="row">
-              <h1 class="text-center text-primary fw-bold" style="color: #990033">{{ lab.activity }}</h1>
+              <h2 class="text-center fw-bold">{{ lab.activity }}</h2>
             </div>
             <div v-if="!lab.extern" class="row row-cols-1 row-cols-sm-2 row-cols-lg-3">
               <Plot v-for="i in lab.graphs.keys()" id="plote" :graph="lab.graphs[i]" :signals="signals">{{ i }}
@@ -48,35 +44,25 @@
                 :controls="lab.controls[0]">
               </ControlPanel>
             </div>
-
           </slot>
         </div>
 
-        <!-- Activity description -->
-        <div v-else class="container-fluid" v-html="lab.help"></div>
-
-      </div>
-      <div class="card-footer">
-        <div v-if="lab.started" class="col">
-          <h6>Tiempo restante: <span class="text-primary fw-bold">{{ remaining }}</span></h6>
-        </div>
+        <div v-else class="activity-help" v-html="lab.help"></div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import Modal from '@/components/Modal.vue';
 import ControlPanel from '@/components/lab/ControlPanel.vue';
 import Plot from '@/components/lab/Plot.vue';
-import NavBar from '@/components/NavBar.vue';
 import { LabInstance } from '@/assets/LabControl.js';
-import { computed, inject, onBeforeMount, reactive, ref } from 'vue';
-import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+import { computed, inject, onBeforeMount, reactive } from 'vue';
+import { useRoute } from 'vue-router';
 
 const session = inject('session');
-const props = defineProps(['builtin']);
-// Data
+defineProps(['builtin']);
+
 const lab = reactive({
   title: '',
   started: false,
@@ -98,16 +84,16 @@ const lab = reactive({
 const labcontrol = new LabInstance('147.96.71.236', '80', { onsignals, ondisconnect });
 const disconnectionTimeout = 10;
 const signals = { time: [], ref: [], u: [], y: [] };
-// Computed
+
 const remaining = computed(() => {
   const format = (x) => Math.floor(x).toString().padStart(2, '0');
   const minutes = format(lab.remainingSeconds / 60);
   const seconds = format(lab.remainingSeconds % 60);
   return minutes > 0 ? `${minutes}:${seconds}` : seconds;
 });
-const counterMessage = computed(() => `Desconexión en ${lab.counter} segundos`);
+const counterMessage = computed(() => `Desconexion en ${lab.counter} segundos`);
 const showDescription = computed(() => lab.counter > 0);
-// Methods
+
 function onsignals(data) {
   const MAX_POINTS = 500;
   data.history.forEach((state) => {
@@ -122,7 +108,7 @@ function onsignals(data) {
       console.log(e);
     }
   });
-  Object.keys(signals).forEach((s, i) => {
+  Object.keys(signals).forEach((s) => {
     var excess = signals[s].length - MAX_POINTS;
     if (excess > 0) {
       signals[s].splice(0, excess);
@@ -132,18 +118,13 @@ function onsignals(data) {
 
 function ondisconnect(reason) {
   console.log(`VUE Disconnect: ${reason}`);
-  if (reason === 'io client disconnect') {
-  } else if (reason === 'io server disconnect') {
-  } else {
-  }
 };
 
 async function start() {
   for (const s in signals) { signals[s] = []; }
-  const lab_content = '';
   session
     .start(lab.activity)
-    .then((response) => {
+    .then(() => {
       const activity = session.activity;
       lab.remainingSeconds = Math.floor(activity.exp - Date.now() / 1000);
       lab.controllerModel = activity.model;
@@ -176,7 +157,7 @@ async function start() {
     })
     .catch((error) => {
       console.error(error);
-      lab.error = 'No se puede conectar con el laboratorio en este momento, prueba más tarde.';      
+      lab.error = 'No se puede conectar con el laboratorio en este momento, prueba mas tarde.';
     });
 };
 
@@ -192,7 +173,7 @@ async function warnStop() {
     if (lab.counter > 0 || !lab.waitingForDisconnection) {
       return;
     }
-    this.stop();
+    stop();
   };
   lab.waitingForDisconnection = true;
   lab.counter = disconnectionTimeout;
@@ -205,7 +186,7 @@ function cancelStop() {
   if (!lab.extern) {
     labcontrol
       .connect()
-      .then((response) => {
+      .then(() => {
         lab.started = true;
       })
       .catch((error) => {
@@ -227,3 +208,104 @@ onBeforeMount(async () => {
   lab.help = await session.getHelp(lab.activity).catch(error => error.message);
 });
 </script>
+
+<style scoped>
+.remote-page {
+  display: grid;
+  gap: 16px;
+}
+
+.remote-shell {
+  overflow: hidden;
+}
+
+.remote-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px;
+  background: rgba(248, 250, 252, 0.94);
+  border-bottom: 1px solid var(--vrisa-line);
+  flex-wrap: wrap;
+}
+
+.remote-header h1 {
+  margin: 4px 0 0;
+  font-size: clamp(1.35rem, 2vw, 1.9rem);
+  font-weight: 700;
+}
+
+.remote-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 260px;
+}
+
+.session-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.session-status span {
+  color: var(--vrisa-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.session-status strong {
+  padding: 8px 10px;
+  color: var(--vrisa-primary-dark);
+  background: #ccfbf1;
+  border-radius: 6px;
+}
+
+.stop-confirm {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vrisa-line);
+}
+
+.stop-confirm h2 {
+  margin: 0 auto 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.remote-body {
+  padding: 14px;
+}
+
+.remote-frame :deep(iframe) {
+  width: 100% !important;
+  min-height: 80vh;
+  border: 0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.activity-help {
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--vrisa-line);
+  border-radius: 6px;
+}
+
+@media (max-width: 860px) {
+  .remote-header {
+    flex-direction: column;
+  }
+
+  .remote-actions,
+  .session-status,
+  .stop-confirm {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+</style>

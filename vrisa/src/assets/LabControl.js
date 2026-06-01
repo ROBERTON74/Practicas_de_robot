@@ -122,11 +122,11 @@ class LabState {
   // Crea un LabState a partir del modelo, recorriendo controles y señales
   static fromModel(model) {
     const state = new LabState();
-    for (const [w, w_info] of model[this.CONTROLS].entries()) {
-      state.add(w, w_info.type);
+    for (const [w, w_info] of Object.entries(model[LabState.CONTROLS])) {
+      state.add(w, w_info);
     }
-    for (const [w, w_info] of model[this.SIGNALS].entries()) {
-      state.add(w, w_info.type);
+    for (const [w, w_info] of Object.entries(model[LabState.SIGNALS])) {
+      state.add(w, w_info);
     }
     return state;
   }
@@ -157,7 +157,7 @@ class LabState {
     if (!name in this.READABLE) {
       throw new Error(`"${name}" does not exist.`);
     }
-    return Promise.resolve(this.st);
+    return Promise.resolve(this.state[name].value);
   }
 
   // Marca una variable como modificada con el nuevo valor pendiente de enviar
@@ -279,7 +279,7 @@ class LabInstance {
     const socket = io(this._getURL(), {
       query: this._getQueryString(),
       autoConnect: false,
-      reconnecion: false,
+      reconnection: false,
     });
     return socket;
   }
