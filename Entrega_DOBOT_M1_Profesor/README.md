@@ -1,6 +1,6 @@
 # Entrega proyecto DOBOT M1
 
-Carpeta preparada para entregar al tutor.
+He preparado esta carpeta para entregar al tutor.
 
 ## Enlace al repositorio
 
@@ -32,4 +32,4 @@ cf7937a - Preparar entrega DOBOT M1 para integracion
 
 ## Nota para la entrega
 
-El proyecto queda preparado para que, cuando el robot fisico y la Raspberry Pi esten disponibles, se pueda continuar con la integracion real. Durante las practicas se valido la aplicacion con un controlador simulado/mock, ya que el robot fisico presentaba una averia en el encoder del eje 1.
+He dejado el proyecto preparado para que, cuando el robot fisico y la Raspberry Pi esten disponibles, se pueda continuar con la integracion real. Durante las practicas valide la aplicacion con un controlador simulado/mock, ya que el robot fisico presentaba una averia en el encoder del eje 1.

@@ -26,7 +26,7 @@ Retome el trabajo despues del puente de mayo. Fue un dia complicado a nivel pers
 
 ## 28 de mayo, jueves
 
-Ese dia hable con el tutor y me comunico que no podriamos vernos mas presencialmente porque tenia que operarse. A partir de ese momento, el seguimiento del proyecto se realizaria principalmente por correo electronico. Tambien se planteo enviar el robot a un tecnico de la universidad para que pudiera revisarlo y comprobar si era posible repararlo.
+Ese dia hable con el tutor y me comunico que no podriamos vernos mas presencialmente porque tenia que operarse. A partir de ese momento, mantendriamos el seguimiento del proyecto principalmente por correo electronico. Tambien hablamos de enviar el robot a un tecnico de la universidad para que pudiera revisarlo y comprobar si era posible repararlo.
 
 ## 29 de mayo, viernes
 
@@ -38,7 +38,7 @@ Durante este dia continue puliendo la interfaz grafica. Por la tarde estaba prev
 
 ## 2 de junio, martes
 
-Me reuni con el tecnico especialista a las 13:30 para comprobar si podia ayudarnos con el robot. Tambien se le facilito el software y la documentacion disponible del DOBOT M1 para que pudiera realizar el diagnostico con mas informacion.
+Me reuni con el tecnico especialista a las 13:30 para comprobar si podia ayudarnos con el robot. Tambien le facilite el software y la documentacion disponible del DOBOT M1 para que pudiera realizar el diagnostico con mas informacion.
 
 ## 8 de junio, lunes
 
@@ -50,7 +50,7 @@ Estas piezas son de tipo OEM, es decir, fabricadas especificamente para el fabri
 
 ## 9 de junio, martes
 
-A partir de este dia seguimos esperando el repuesto del encoder, que el tutor debia solicitar al fabricante del robot. Tambien quedaba pendiente recibir de Jesus las claves necesarias para poder conectarnos a la Raspberry Pi y probar posteriormente la comunicacion con el robot.
+A partir de este dia seguimos esperando el repuesto del encoder, que el tutor debia solicitar al fabricante del robot. Tambien me quedaba pendiente recibir de Jesus las claves necesarias para poder conectarnos a la Raspberry Pi y probar posteriormente la comunicacion con el robot.
 
 Mientras tanto, continue preparando la aplicacion para que la parte web, la interfaz y la simulacion quedasen listas. El objetivo era que, cuando el robot estuviera reparado y la Raspberry disponible, solo fuese necesario completar la integracion fisica.
 
@@ -58,7 +58,6 @@ Mientras tanto, continue preparando la aplicacion para que la parte web, la inte
 
 Durante estos dias trabaje en dejar preparada la entrega final del proyecto. Como el repuesto del robot probablemente no llegaria a tiempo antes de finalizar las practicas, enfoque el trabajo en dejar la aplicacion preparada para integracion futura.
 
-Se preparo un modo simulado o mock para el DOBOT M1, de forma que los botones de la interfaz pudieran enviar comandos y estos quedasen registrados aunque no existiera conexion fisica con el robot. Tambien se documento el contrato de comandos que debera usar la Raspberry Pi o el controlador real cuando el robot vuelva a estar operativo.
+Prepare un modo simulado o mock para el DOBOT M1, de forma que los botones de la interfaz pudieran enviar comandos y estos quedasen registrados aunque no existiera conexion fisica con el robot. Tambien documente el contrato de comandos que debera usar la Raspberry Pi o el controlador real cuando el robot vuelva a estar operativo.
 
 Finalmente, valide que la actividad DOBOT M1 se podia iniciar en local, que el mock recibia comandos y que la interfaz quedaba preparada para continuar el trabajo cuando el hardware este disponible.
-
