@@ -42,7 +42,7 @@ const router = createRouter({
   ],
 });
 
-const session = new Session('http://147.96.71.236');
+const session = new Session('/api');
 router.beforeResolve(async (to, from, next) => {
   const user = await session.authenticate()
     .then(user => {

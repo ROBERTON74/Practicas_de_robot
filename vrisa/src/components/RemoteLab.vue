@@ -81,7 +81,11 @@ const lab = reactive({
   counter: 0,
   waitingForDisconnection: false,
 });
-const labcontrol = new LabInstance('147.96.71.236', '80', { onsignals, ondisconnect });
+const labcontrol = new LabInstance(
+  window.location.hostname,
+  Number(window.location.port || 80),
+  { onsignals, ondisconnect }
+);
 const disconnectionTimeout = 10;
 const signals = { time: [], ref: [], u: [], y: [] };
 

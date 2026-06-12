@@ -4,8 +4,6 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-# Sustituir el servidor remoto del profesor por localhost para despliegue local
-RUN sed -i "s|http://147.96.71.236|http://localhost|g" src/main.js
 RUN npm run build
 
 # ── ETAPA 2: Servir con nginx ──────────────────────────────────────────────────

@@ -1,141 +1,304 @@
-# Arquitectura de Microservicios — Robot Universitario
+# Arquitectura de microservicios
 
-Documento técnico que describe la arquitectura del sistema y el flujo completo de comunicación entre cada microservicio del proyecto **Robot Universitario**.
+Este documento explica la arquitectura del proyecto **Robot Universitario** y el flujo de comunicacion entre sus servicios.
 
----
+## 1. Vision general
 
-## Flujo de Trabajo Completo
+El proyecto esta dividido en varios servicios ejecutados con Docker.
 
-El diagrama muestra las tres fases del sistema: autenticación del alumno, operación desde el panel de control y control físico del robot.
+La idea general es:
 
-```mermaid
-flowchart TD
-    USER(["👤 ALUMNO\nNavegador Web"])
-
-    subgraph AUTH ["🔐  FASE 1 — AUTENTICACIÓN"]
-        direction TB
-        L1["vrisa · Vue.js\n━━━━━━━━━━━━━━\nFormulario de Login"]
-        L2["ReNoLabs · Node.js\n━━━━━━━━━━━━━━\nVerifica credenciales\nen MariaDB"]
-        L3{"¿Credenciales\ncorrectas?"}
-        L4["✅ Genera JWT Token\nfirmado y seguro"]
-        L5["❌ Error de acceso\nCredenciales inválidas"]
-    end
-
-    subgraph OPERACION ["⚙️  FASE 2 — OPERACIÓN"]
-        direction TB
-        O1["vrisa · Vue.js\n━━━━━━━━━━━━━━\nPanel de control\ndel laboratorio"]
-        O2{"¿JWT Token\nválido?"}
-        O3["❌ Sesión expirada\nToken inválido"]
-        O4["ReNoLabs · Node.js\n━━━━━━━━━━━━━━\nProcesa la petición\ny consulta datos"]
-        O5[("MariaDB\n━━━━━━━━━━━━━━\nGuarda y recupera\ndatos del alumno")]
-    end
-
-    subgraph ROBOT ["🤖  FASE 3 — CONTROL DEL ROBOT"]
-        direction TB
-        R1["rip-js-server\n━━━━━━━━━━━━━━\nProtocolo RIP\nTraductor de comandos"]
-        R2["🦾 Robot Físico\n━━━━━━━━━━━━━━\nLaboratorio real\nActuadores y sensores"]
-    end
-
-    USER         -->|"① Introduce usuario\n    y contraseña"| L1
-    L1           -->|"② POST /login\n    HTTP Request"| L2
-    L2           -->|"③ SQL Query\n    Red interna Docker"| L3
-    L3           -->|"SÍ ✅"| L4
-    L3           -->|"NO ❌"| L5
-    L5           -.->|"Vuelve al\nformulario"| L1
-    L4           -->|"④ JWT Token\n    devuelto al navegador"| O1
-
-    O1           -->|"⑤ Petición +\n    JWT Token en cabecera"| O2
-    O2           -->|"NO ❌"| O3
-    O3           -.->|"Redirige al\nlogin"| L1
-    O2           -->|"SÍ ✅"| O4
-    O4           <-->|"⑥ SQL Query\n    Red interna Docker"| O5
-    O4           -->|"⑦ Comando RIP\n    WebSocket / TCP"| R1
-
-    R1           -->|"⑧ Señal de control\n    Interfaz hardware"| R2
-    R2           -->|"⑨ Datos del robot\n    Sensores / Estado"| R1
-    R1           -->|"⑩ Resultado\n    de la operación"| O4
-    O4           -->|"⑪ JSON Response\n    HTTP"| O1
-    O1           -->|"⑫ Actualiza pantalla\n    en tiempo real"| USER
-
-    style USER   fill:#2980B9,stroke:#1A5276,color:#fff
-    style L1     fill:#27AE60,stroke:#1E8449,color:#fff
-    style L2     fill:#1ABC9C,stroke:#148F77,color:#fff
-    style L3     fill:#F39C12,stroke:#B7770D,color:#fff
-    style L4     fill:#27AE60,stroke:#1E8449,color:#fff
-    style L5     fill:#E74C3C,stroke:#A93226,color:#fff
-    style O1     fill:#27AE60,stroke:#1E8449,color:#fff
-    style O2     fill:#F39C12,stroke:#B7770D,color:#fff
-    style O3     fill:#E74C3C,stroke:#A93226,color:#fff
-    style O4     fill:#1ABC9C,stroke:#148F77,color:#fff
-    style O5     fill:#E67E22,stroke:#A04000,color:#fff
-    style R1     fill:#8E44AD,stroke:#6C3483,color:#fff
-    style R2     fill:#C0392B,stroke:#922B21,color:#fff
+```text
+Navegador del usuario
+   |
+   v
+vrisa / frontend Vue.js
+   |
+   v
+ReNoLabs / backend del laboratorio
+   |
+   v
+Base de datos MySQL
+   |
+   v
+Controladores / simulacion / robot real futuro
 ```
 
----
+En local, el DOBOT M1 funciona en modo simulado.
 
-## Resumen de Fases
+En el futuro, cuando tengamos acceso a la Raspberry Pi y al SDK del DOBOT M1, el flujo podra llegar hasta el robot fisico.
 
-| Fase | Qué ocurre | Servicios implicados |
-|------|-----------|----------------------|
-| **① Autenticación** | El alumno introduce sus credenciales. ReNoLabs las verifica en MariaDB. Si son correctas devuelve un JWT Token. | vrisa → ReNoLabs → MariaDB |
-| **② Operación** | El alumno usa el panel de control. Cada petición lleva el JWT Token. ReNoLabs lo verifica, consulta la base de datos y procesa la acción. | vrisa → ReNoLabs ↔ MariaDB |
-| **③ Control del robot** | ReNoLabs envía comandos al robot mediante el protocolo RIP. El robot ejecuta la acción y devuelve los datos al alumno. | ReNoLabs → rip-js-server → Robot |
+## 2. Servicios principales
 
----
+| Servicio | Tecnologia | Funcion |
+|---|---|---|
+| `vrisa` | Vue.js + Nginx | Interfaz web del usuario |
+| `ReNoLabs` | Node.js + Express + Sequelize | Backend principal del laboratorio remoto |
+| `MySQL` | MySQL 8.0 | Base de datos de ReNoLabs |
+| `backend` | Node.js + Express + PM2 | Backend auxiliar del proyecto |
+| `MariaDB` | MariaDB | Base de datos del backend auxiliar |
+| `rip-js-server` | Node.js | Servidor RIP de pruebas/simulacion |
+| Controladores | Python / JavaScript | Logica de control de laboratorios |
 
-## Descripción de cada Microservicio
+## 3. Flujo de autenticacion
 
-| Servicio | Tecnología | Rol en el sistema |
-|----------|-----------|-------------------|
-| **vrisa** | Vue.js | Interfaz visual del alumno. Muestra el panel de control, envía peticiones al backend y actualiza la pantalla con los resultados en tiempo real. |
-| **ReNoLabs** | Node.js + Express.js + PM2 | Núcleo del sistema. Expone la API REST, valida el JWT Token en cada petición, consulta MariaDB y envía comandos al robot. PM2 lo mantiene siempre activo. |
-| **MariaDB** | MariaDB | Almacena usuarios, sesiones, resultados de pruebas y configuraciones del laboratorio. Solo accesible desde la red interna de Docker. |
-| **rip-js-server** | JavaScript · Protocolo RIP | Capa de comunicación entre el backend y el robot. Traduce los comandos de software a señales que el hardware puede interpretar. |
-| **Robot Físico** | Hardware | Laboratorio real. Ejecuta las acciones físicas y devuelve datos de sensores y actuadores al sistema. |
+Cuando un usuario entra en la plataforma:
 
----
+1. Abre el frontend en el navegador.
+2. Introduce usuario y contrasena.
+3. El frontend envia una peticion a ReNoLabs.
+4. ReNoLabs valida las credenciales contra MySQL.
+5. Si son correctas, ReNoLabs devuelve un JWT.
+6. El frontend usa ese token para las siguientes peticiones.
 
-## Protocolos de Comunicación
+Flujo:
 
-| Tramo | Protocolo | Datos transmitidos |
-|-------|----------|--------------------|
-| Alumno → vrisa | HTTP / HTTPS | Credenciales, acciones del usuario |
-| vrisa → ReNoLabs | REST + JWT | JSON con datos de la petición |
-| ReNoLabs ↔ MariaDB | SQL | Consultas y resultados de base de datos |
-| ReNoLabs → rip-js-server | WebSocket / TCP · RIP | Comandos de control del robot |
-| rip-js-server → Robot | Interfaz hardware · RIP | Señales físicas de control y lectura de sensores |
-
----
-
-## Aislamiento con Docker
-
-Cada microservicio corre en su propio contenedor Docker, aislado del resto. Todos comparten la misma red interna virtual, por lo que se comunican entre sí sin exponer puertos innecesarios al exterior.
-
-```
-┌──────────────────────────────────────────────────┐
-│                  RED DOCKER INTERNA              │
-│                                                  │
-│   ┌───────────┐        ┌────────────────────┐   │
-│   │   vrisa   │ ──────►│     ReNoLabs       │   │
-│   │  Vue.js   │◄─────  │  Node.js + PM2     │   │
-│   │  :80      │        │  :3000             │   │
-│   └───────────┘        └────────┬───────────┘   │
-│                                 │                │
-│                    ┌────────────▼───────────┐    │
-│                    │       MariaDB          │    │
-│                    │   Base de Datos        │    │
-│                    │   :3306 (interno)      │    │
-│                    └────────────────────────┘    │
-│                                                  │
-└──────────────────────────────────────────────────┘
-         │ rip-js-server · Protocolo RIP
-         ▼
-   🤖 Robot Físico
+```text
+Usuario
+   |
+   v
+vrisa
+   |
+   | POST /login
+   v
+ReNoLabs
+   |
+   v
+MySQL
+   |
+   v
+JWT devuelto al frontend
 ```
 
-> El profesor puede levantar todo el entorno con un único comando: `docker-compose up --build`
+## 4. Flujo para abrir una actividad
 
----
+Cuando el usuario selecciona una actividad:
 
-*Actualizar este documento ante cualquier cambio en la arquitectura del sistema.*
+1. El frontend pide iniciar la actividad.
+2. ReNoLabs comprueba el token JWT.
+3. ReNoLabs busca la actividad, vista y controlador en MySQL.
+4. ReNoLabs crea una sesion de laboratorio.
+5. El frontend carga la vista EjsS correspondiente.
+6. La vista se comunica en tiempo real mediante Socket.IO.
+
+Flujo:
+
+```text
+vrisa
+   |
+   | GET /request_activity
+   v
+ReNoLabs
+   |
+   v
+MySQL
+   |
+   v
+Vista EjsS + sesion de laboratorio
+```
+
+## 5. Comunicacion en tiempo real
+
+Para las actividades no basta con HTTP normal, porque hay que enviar y recibir datos continuamente.
+
+Por eso se usa **Socket.IO**.
+
+Sirve para:
+
+- mandar ordenes desde la interfaz
+- recibir valores del laboratorio
+- actualizar graficas
+- mostrar estados de conexion
+
+Flujo:
+
+```text
+Vista del laboratorio
+   |
+   | Socket.IO
+   v
+ReNoLabs
+   |
+   v
+Controlador o simulacion
+```
+
+## 6. Comunicacion interna con controladores
+
+Algunos controladores se comunican con ReNoLabs mediante **ZeroMQ**.
+
+Ejemplo:
+
+```text
+ReNoLabs
+   |
+   | ZeroMQ
+   v
+Controlador Python
+```
+
+En un laboratorio real, el controlador Python podria comunicarse con el hardware.
+
+En local, para el DOBOT M1 se usa modo simulado hasta tener acceso al robot real.
+
+## 7. DOBOT M1 en local
+
+Estado actual:
+
+```text
+DOBOT M1 = modo simulado local
+```
+
+Esto permite probar:
+
+- login
+- carga de actividades
+- entrada a la actividad DOBOT M1
+- interfaz web
+- comunicacion con ReNoLabs
+
+No permite todavia mover el robot fisico real.
+
+Para robot real faltan:
+
+- acceso a Raspberry Pi
+- credenciales SSH
+- red/VPN
+- SDK oficial DOBOT M1
+- drivers
+- confirmacion de conexion USB/serie/Ethernet
+- seguridad del laboratorio
+
+## 8. Futuro flujo con Raspberry Pi
+
+Cuando tengamos acceso a la Raspberry, el flujo esperado sera:
+
+```text
+vrisa frontend
+   |
+   v
+ReNoLabs backend
+   |
+   v
+adaptador / controlador DOBOT
+   |
+   v
+Raspberry Pi
+   |
+   v
+DOBOT M1 real
+```
+
+La Raspberry actuara como puente entre el software y el robot fisico.
+
+## 9. Docker y puertos locales
+
+| Servicio | Contenedor | Puerto local |
+|---|---|---|
+| Frontend vrisa | `proyectorobot_universitario-vrisa-1` | `8082` |
+| Backend auxiliar | `proyectorobot_universitario-backend-1` | `3000` |
+| MariaDB auxiliar | `proyectorobot_universitario-db-1` | `3308` |
+| rip-js-server | `proyectorobot_universitario-rip-server-1` | `2055` |
+| ReNoLabs | `docker-vrlabs_node-1` | `80` |
+| MySQL ReNoLabs | `docker-vrlabs_db-1` | `3307` |
+
+## 10. URLs utiles
+
+Frontend:
+
+```text
+http://localhost:8082/vr-isa/
+```
+
+Backend auxiliar:
+
+```text
+http://localhost:3000/
+```
+
+ReNoLabs:
+
+```text
+http://localhost
+```
+
+rip-js-server:
+
+```text
+http://localhost:2055/
+```
+
+## 11. Ramas del frontend
+
+Hay dos versiones de interfaz:
+
+| Rama | Interfaz |
+|---|---|
+| `main` | interfaz clasica |
+| `frontend-modernizacion` | interfaz moderna |
+
+Scripts:
+
+```powershell
+.\scripts\usar-frontend-clasico.ps1
+.\scripts\usar-frontend-moderno.ps1
+```
+
+## 12. Diagrama general
+
+```text
+                   +----------------------+
+                   | Usuario / navegador  |
+                   +----------+-----------+
+                              |
+                              v
+                   +----------------------+
+                   | vrisa / Vue.js       |
+                   | Nginx / puerto 8082  |
+                   +----------+-----------+
+                              |
+                              v
+                   +----------------------+
+                   | ReNoLabs             |
+                   | Node.js / Express    |
+                   | puerto 80            |
+                   +----------+-----------+
+                              |
+                +-------------+-------------+
+                |                           |
+                v                           v
+       +------------------+        +----------------------+
+       | MySQL            |        | Socket.IO / ZeroMQ   |
+       | puerto 3307      |        | Controladores        |
+       +------------------+        +----------+-----------+
+                                             |
+                                             v
+                                  +----------------------+
+                                  | Simulacion local     |
+                                  | DOBOT real futuro    |
+                                  +----------------------+
+```
+
+## 13. Estado actual
+
+Actualmente el sistema funciona en local para demostracion:
+
+- frontend accesible
+- login funcionando
+- actividades visibles
+- ReNoLabs activo
+- MySQL activo
+- DOBOT M1 en modo simulado
+- cambio entre interfaz clasica y moderna mediante scripts
+
+Pendiente para hardware real:
+
+- Raspberry Pi
+- SDK DOBOT M1
+- drivers
+- pruebas de seguridad
+- conexion real con el robot
+
+## 14. Fecha de actualizacion
+
+Ultima actualizacion: junio de 2026.

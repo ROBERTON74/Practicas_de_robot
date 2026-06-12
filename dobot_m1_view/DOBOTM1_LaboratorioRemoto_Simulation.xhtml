@@ -1107,7 +1107,7 @@ class LabInstance {
   /**
   * Receive signals data. 
   */
- update() {
+  update() {
     try {
       var batch = [];
       for (var key in this.state_EJS) {
@@ -1127,6 +1127,15 @@ class LabInstance {
   }
 
   send(events) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('DOBOT M1 demo mode: command queued without active lab socket.', events);
+      try {
+        if (this.handlers && this.handlers['ondemo']) {
+          this.handlers['ondemo'](events);
+        }
+      } catch(e) {}
+      return;
+    }
     this.socket.emit('signals.set', events);
   }
 
@@ -1188,7 +1197,14 @@ var _stringProperties = {};
     uploadText: function(action) { EJSS_TOOLS.File.uploadText(_model,action); } 
   };
 
-var lab = new LabInstance("localhost", "8080");lab.connect();
+var lab = new LabInstance("localhost", "8080", {
+  ondemo: function(events) {
+    try {
+      console.log('DOBOT M1 demo command', events);
+    } catch(e) {}
+  }
+});
+lab.connect();
 
 
   function _play()  { _isPaused = false; _isPlaying = true;  _model.play();  }
